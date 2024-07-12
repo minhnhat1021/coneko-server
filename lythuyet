@@ -3,3 +3,8 @@ I. Khởi tạo dự án backend
     2. npm i express
     3. npm i -D nodemon
     4. trong scripts: "start": "nodemon --inspect src/server.js",
+    5. npm i -D morgan
+    6. npm i mongoose
+II. GET POST
+    1. dữ liệu get : req.query.q
+    2. dữ liệu post: req.body.q

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon --inspect server.js",
+    "start": "nodemon --inspect src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,9 +21,11 @@
   },
   "homepage": "https://github.com/minhnhat1021/coneko-server#readme",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0"
   },
   "devDependencies": {
+    "morgan": "^1.10.0",
     "nodemon": "^3.1.4"
   }
 }
