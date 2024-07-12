@@ -1,0 +1,29 @@
+{
+  "name": "coneko-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon --inspect server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minhnhat1021/coneko-server.git"
+  },
+  "keywords": [
+    "coneko"
+  ],
+  "author": "coneko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/minhnhat1021/coneko-server/issues"
+  },
+  "homepage": "https://github.com/minhnhat1021/coneko-server#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

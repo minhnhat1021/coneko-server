@@ -1,0 +1,5 @@
+I. Khởi tạo dự án backend
+    1. npm init
+    2. npm i express
+    3. npm i -D nodemon
+    4. trong scripts: "start": "nodemon --inspect src/server.js",
