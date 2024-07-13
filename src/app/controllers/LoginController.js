@@ -1,13 +1,25 @@
 const User = require('../models/User')
 
-class LoginController {
+let userActive = [
+    
+]
 
+class LoginController {
+    
+    // [GET] 
+    getLoginActive(req, res, next) {
+        res.json(userActive)
+    }
     // [POST]
-    login(req, res) {
+    login(req, res, next) {
         User.findOne({userName: req.body.userName, password : req.body.password}) 
             .then((user) => {
                 if(user) {
-                    res.json(`đăng nhập thành công vào tài khoản : ${user}`)
+                    User.updateOne({_id: user._id}, {isActive: true})
+                        .then(() => userActive.push(user))
+                        .then(() => res.redirect('back')) 
+                        // .then(() => userActive.pop())
+                        .catch(next)
                 }else if(!user) {
                     res.json('thông tin đăng nhập không chính xác')
                 }
