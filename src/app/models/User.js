@@ -1,9 +1,14 @@
-const mongoose = require('mongoose')
+// sau khi kết nối đến db, mongoose sẽ nhận về dữ liệu bên phía db (ở đây đang kết nối tới db bảng user)
+const mongoose = require('mongoose')  
 
+// Schema để db có tính liên kết chặt chẽ hơn
 const Schema = mongoose.Schema
 
+
+// nạp dữ liệu db bảng user vào biến User 
 const User = new Schema({
     email: {type: String, default: ''},
+    fullname: {type: String, required: true},
     username: {type: String, default: ''},
     password: {type: String, default: ''},
     displayName: {type: String, default: ''},
@@ -11,9 +16,9 @@ const User = new Schema({
     role: {type: String, default: ''},
     isActive: {type: String, default: ''},
     verifyToken: {type: String, default: ''},
-    createdAt: {type: Date, default: Date.now},
-    updatedAt: {type: Date, default: ''},
 
+}, {
+    timestamps: true // tạo dữ liệu về thời gian tạo và xóa User
 })
 
 module.exports = mongoose.model('User', User)
