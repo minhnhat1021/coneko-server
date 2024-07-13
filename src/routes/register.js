@@ -5,7 +5,7 @@ const registerController = require('../app/controllers/RegisterController')
 
 
 // user controller
-router.post('/', registerController.create)
+router.post('/', registerController.register)
 
 
 

@@ -8,8 +8,8 @@ const Schema = mongoose.Schema
 // nạp dữ liệu db bảng user vào biến User 
 const User = new Schema({
     email: {type: String, default: ''},
-    fullname: {type: String, required: true},
-    username: {type: String, default: ''},
+    fullName: {type: String, required: true},
+    userName: {type: String, default: ''},
     password: {type: String, default: ''},
     displayName: {type: String, default: ''},
     avatar: {type: String, default: ''},
@@ -20,5 +20,6 @@ const User = new Schema({
 }, {
     timestamps: true // tạo dữ liệu về thời gian tạo và xóa User
 })
+
 
 module.exports = mongoose.model('User', User)
