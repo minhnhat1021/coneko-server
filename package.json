@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/minhnhat1021/coneko-server#readme",
   "dependencies": {
+    "axios": "^1.7.2",
+    "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "mongoose": "^8.5.0"

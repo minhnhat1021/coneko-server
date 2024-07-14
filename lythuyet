@@ -8,3 +8,7 @@ I. Khởi tạo dự án backend
 II. GET POST
     1. dữ liệu get : req.query.q
     2. dữ liệu post: req.body.q
+II. Cài express-session 
+    1. npm install express-session
+    2. const session = require('express-session');
+    2. (dùng để tạo ra 1 biến bất kỳ khi thao tác lên server(ở đây dùng tạo web token, kiểm tra user có đang đăng nhập hay k))

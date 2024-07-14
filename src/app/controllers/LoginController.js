@@ -1,14 +1,16 @@
 const User = require('../models/User')
-var session = require('express-session')
-let userActive = [
-    
-]
+
+let infoLogin = {
+    data: [
+        
+    ]
+}
 
 class LoginController {
     
     // [GET] 
     getLoginActive(req, res, next) {
-        res.json(userActive)
+        res.json(infoLogin)
     }
     // [POST]
     login(req, res, next) {
@@ -16,15 +18,12 @@ class LoginController {
             .then((user) => {
                 if(user) {
                     //1 tao json webtoken
-                    //2 su dung session
+                    //2 su dung session 
                     req.session.isAuthenticated = true
-                    // User.updateOne({_id: user._id}, {isActive: true})
-                    //     .then(() => userActive.push(user))
-                    //     .then(() => res.redirect('back')) 
-                    //     // .then(() => userActive.pop())
-                    //     .catch(next)
-                }else if(!user) {
-                    res.json('thông tin đăng nhập không chính xác')
+                    infoLogin.data.push(user)
+                    res.status(200).json({ message: 'Đăng nhập thành công', user, hasSession: req.session })
+                }else {
+                    res.json({msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'})
                 }
             })      
     }

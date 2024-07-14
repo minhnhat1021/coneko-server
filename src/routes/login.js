@@ -5,8 +5,9 @@ const loginController = require('../app/controllers/LoginController')
 
 
 // user controller
-router.post('/userActive', loginController.login)
-router.get('/userActive', loginController.getLoginActive)
+router.get('/infoLogin', loginController.getLoginActive)
+
+router.post('/', loginController.login)
 
 
 
