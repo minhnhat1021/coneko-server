@@ -1,5 +1,5 @@
 const User = require('../models/User')
-
+var session = require('express-session')
 let userActive = [
     
 ]
@@ -15,15 +15,26 @@ class LoginController {
         User.findOne({userName: req.body.userName, password : req.body.password}) 
             .then((user) => {
                 if(user) {
-                    User.updateOne({_id: user._id}, {isActive: true})
-                        .then(() => userActive.push(user))
-                        .then(() => res.redirect('back')) 
-                        // .then(() => userActive.pop())
-                        .catch(next)
+                    //1 tao json webtoken
+                    //2 su dung session
+                    req.session.isAuthenticated = true
+                    // User.updateOne({_id: user._id}, {isActive: true})
+                    //     .then(() => userActive.push(user))
+                    //     .then(() => res.redirect('back')) 
+                    //     // .then(() => userActive.pop())
+                    //     .catch(next)
                 }else if(!user) {
                     res.json('thông tin đăng nhập không chính xác')
                 }
             })      
+    }
+    logout(req, res, next) {
+        req.session.destroy((err) => {
+            if(err) {
+                return next(err)
+            }
+            res.redirect('/')
+        })
     }
 }
 

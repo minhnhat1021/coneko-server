@@ -16,7 +16,11 @@ class RegisterController {
                     
                     const userRegister = new User({...req.body, displayName, userName, verifyToken, isActive});
                     userRegister.save()
-                    res.redirect('back')
+
+                    res.json({
+                        message: 'Đăng ký thành công',
+                        user: userRegister
+                    })
                 }
             })      
     }

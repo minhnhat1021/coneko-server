@@ -22,6 +22,7 @@
   "homepage": "https://github.com/minhnhat1021/coneko-server#readme",
   "dependencies": {
     "express": "^4.19.2",
+    "express-session": "^1.18.0",
     "mongoose": "^8.5.0"
   },
   "devDependencies": {
