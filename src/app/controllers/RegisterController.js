@@ -25,14 +25,15 @@ class RegisterController {
                     const verifyToken = crypto.randomBytes(20).toString('hex'); 
                     const isActive = true;
                     
-                    console.log(req.body)
                     const userRegister = new User({...req.body, displayName, userName, verifyToken, isActive});
-                    
+
+                    req.session.isAuthenticated = true
+
                     userRegister
                         .save()
                         .then(() => {infoRegiter.data.push(userRegister)})
                         .then(() => 
-                            res.status(200).json({ message: 'Đăng ký thành công', user: userRegister })
+                            res.status(200).json({ message: 'Đăng ký thành công', user: userRegister, hasSession: req.session })
                         )
                         .catch(next)
                 }
