@@ -23,7 +23,7 @@ class RegisterController {
                     const displayName = req.body.fullName
                     const userName = req.body.email
                     const verifyToken = crypto.randomBytes(20).toString('hex'); 
-                    const isActive = false;
+                    const isActive = true;
                     
                     console.log(req.body)
                     const userRegister = new User({...req.body, displayName, userName, verifyToken, isActive});

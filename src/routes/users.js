@@ -5,8 +5,8 @@ const usersController = require('../app/controllers/UsersController')
 
 
 // user controller
-router.use('/:id', usersController.show)
-router.use('/', usersController.index)
+router.get('/search', usersController.findUser)
+router.get('/', usersController.index)
 
 
 module.exports = router 

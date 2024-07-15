@@ -9,8 +9,17 @@ class UsersController {
             .then(users => res.json(users))
             .catch(next)
     }
-    show(req, res) {
-        res.send('showw')
+    findUser(req, res) {
+        const {q} = req.query
+        User.findOne({userName: req.query.q}) 
+            .then((user) => {
+
+                if(user) {
+                    res.status(200).json({ message: 'Đã tìm thấy tài khoản', user })
+                }else {
+                    res.json({msg: 'Không tìm thấy tài khoản này'})
+                }
+            })    
     }
 }
 
