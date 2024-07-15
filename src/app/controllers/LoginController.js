@@ -1,3 +1,6 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User')
 
 let infoLogin = {
@@ -14,14 +17,21 @@ class LoginController {
     }
     // [POST]
     login(req, res, next) {
-        User.findOne({userName: req.body.userName, password : req.body.password}) 
+        const {userName, password} = req.body
+        User.findOne({userName: userName}) 
             .then((user) => {
                 if(user) {
-                    //1 tao json webtoken
-                    //2 su dung session 
-                    req.session.isAuthenticated = true
-                    infoLogin.data.push(user)
-                    res.status(200).json({ message: 'Đăng nhập thành công', user, hasSession: req.session })
+                    bcrypt.compare(password, user.password, (err, isMatch) => {
+                        if (err) {
+                            throw new Error('lỗi giải mã mật khẩu');
+                        }if (isMatch) {
+                            //1 tao json webtoken                    
+                            const token = jwt.sign({ userId: user._id }, crypto.randomBytes(20).toString('hex'), { expiresIn: '1h' });
+
+                            infoLogin.data.push(user)
+                            res.status(200).json({ message: 'Đăng nhập thành công', token })
+                        } 
+                    })   
                 }else {
                     res.json({msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'})
                 }
@@ -29,13 +39,8 @@ class LoginController {
     }
     //[GET]
     logout(req, res, next) {
-        req.session.destroy((err) => {
-            if(err) {
-                return next(err)
-            }
-            infoLogin.data.pop()
-            res.json(req.session)
-        })
+        infoLogin.data.pop()
+        res.json({message: 'Đã hết phiên đăng nhập'})
     }
 }
 

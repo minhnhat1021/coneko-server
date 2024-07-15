@@ -12,3 +12,7 @@ II. Cài express-session
     1. npm install express-session
     2. const session = require('express-session');
     2. (dùng để tạo ra 1 biến bất kỳ khi thao tác lên server(ở đây dùng tạo web token, kiểm tra user có đang đăng nhập hay k))
+III. Cài bcrypt jsonwebtoken
+    1. npm install bcrypt jsonwebtoken
+    2. bcrypt: dùng để mã hõa mật khẩu khi đưa vào database
+    3. jsonwebtoken: để gửi ra 1 thông báo xác nhận đã đăng nhập

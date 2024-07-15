@@ -1,5 +1,7 @@
-const User = require('../models/User')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const User = require('../models/User')
 
 let infoRegiter = {
     data: [
@@ -20,22 +22,29 @@ class RegisterController {
                 if(user) {
                     res.json({ msg: 'Email đã tồn tại '})
                 }else {
-                    const displayName = req.body.fullName
-                    const userName = req.body.email
-                    const verifyToken = crypto.randomBytes(20).toString('hex'); 
+                    const {fullName, email, password} = req.body
+                    const displayName = fullName
+                    const userName = email
                     const isActive = true;
+
+                    // Mã hóa password theo bảng mật khẩu bcrypt trước khi đưa vào db
+                    bcrypt.hash(password, 10, (err, hashedPassword) => {
+                        if (err) {
+                            throw new Error('lỗi mã hóa mật khẩu');
+                        }
+                        const userRegister = new User({password: hashedPassword, email, fullName, displayName, userName, isActive});
+
+                        const token = jwt.sign({ userId: userRegister._id }, crypto.randomBytes(20).toString('hex'), { expiresIn: '1h' });
+
+                        userRegister
+                            .save()
+                            .then(() => {infoRegiter.data.push(userRegister)})
+                            .then(() => 
+                                res.status(200).json({ message: 'Đăng ký thành công', token })
+                            )
+                            .catch(next)
+                    })
                     
-                    const userRegister = new User({...req.body, displayName, userName, verifyToken, isActive});
-
-                    req.session.isAuthenticated = true
-
-                    userRegister
-                        .save()
-                        .then(() => {infoRegiter.data.push(userRegister)})
-                        .then(() => 
-                            res.status(200).json({ message: 'Đăng ký thành công', user: userRegister, hasSession: req.session })
-                        )
-                        .catch(next)
                 }
             })      
     }
