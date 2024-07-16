@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const User = require('../models/User')
 
 module.exports = function loginMiddleware (req, res, next) {
 
@@ -9,7 +10,14 @@ module.exports = function loginMiddleware (req, res, next) {
     }
 
     // Nếu có token
-    const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
+    User.findOne({_id: req.body.id})
+        .then((user) => {
+            if(!user) {
+                return res.json({message: 'Không tìm thấy user này trên hệ thống'})
+            }
+            const decoded = jwt.verify(req.body.token, user.verifyToken);
+            req.user = decoded;
+            next();
+        })
+    
 }

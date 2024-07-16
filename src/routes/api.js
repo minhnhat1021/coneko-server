@@ -3,14 +3,14 @@ const router = express.Router();
 
 const loginRouter = require('./login');
 const registerRouter = require('./register');
-const usersRouter = require('./users');
+const userRouter = require('./user');
 const aboutRouter = require('./about');
 
 // api Router
 
     router.use('/login', loginRouter)
     router.use('/register', registerRouter)
-    router.use('/users', usersRouter)
+    router.use('/user', userRouter)
     router.use('/about', aboutRouter)
 
 

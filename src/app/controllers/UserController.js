@@ -1,14 +1,23 @@
 const User = require('../models/User')
 
 
-class UsersController {
+class UserController {
 
-    // [Get] / users
+    // [Get] /user
     index(req, res, next) {
         User.find({})
             .then(users => res.json(users))
             .catch(next)
     }
+
+    // [Get] /user/account
+    account(req, res, next) {
+        User.find({})
+            .then(users => res.json(users))
+            .catch(next)
+    }
+    
+    // [Get] /user/search
     findUser(req, res) {
         const {q} = req.query
         User.findOne({userName: req.query.q}) 
@@ -23,4 +32,4 @@ class UsersController {
     }
 }
 
-module.exports = new UsersController
+module.exports = new UserController

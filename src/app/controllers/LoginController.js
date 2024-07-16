@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const User = require('../models/User')
 
 
-
 let infoLogin = {
     data: [
         
@@ -13,13 +12,13 @@ let infoLogin = {
 
 class LoginController {
     
-    // [GET] 
+    //[GET] /login/infoLogin
     getLoginActive(req, res, next) {
         res.json(infoLogin)
     }
-    // [POST]
+
+    // [POST] /login
     login(req, res, next) {
-        console.log(req.headers['authorization'])
         const {userName, password} = req.body
         User.findOne({userName: userName}) 
             .then((user) => {
@@ -28,12 +27,16 @@ class LoginController {
                         if (err) {
                             throw new Error('lỗi giải mã mật khẩu');
                         }if (isMatch) {
-                            //1 tao json webtoken              
-                            // crypto.randomBytes(20).toString('hex')  để tạo JWT_secret    
-                            
-                            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET , { expiresIn: '1h' });
+                            //1 tao json webtoken        
+                            const jwtSecret = crypto.randomBytes(20).toString('hex') 
+                            const token = jwt.sign({ userId: user._id }, jwtSecret,  { expiresIn: '1h' });
+                
                             infoLogin.data.push({user, token})
-                            res.status(200).json({ message: 'Đăng nhập thành công', token})
+
+                            User.updateOne({ _id: user._id }, {
+                                verifyToken: jwtSecret
+                            })
+                                .then(() => res.status(200).json({ message: 'Đăng nhập thành công', token, userId: user._id}))
                         } 
                     })   
                 }else {
@@ -41,10 +44,14 @@ class LoginController {
                 }
             })      
     }
-    //[GET]
+    //[POST] /login/out
     logout(req, res, next) {
-        infoLogin.data.pop()
-        res.json({message: 'Đã hết phiên đăng nhập'})
+        User.updateOne({_id: req.body.id}, {
+            verifyToken: ''
+        })
+            .then(() => infoLogin.data.pop())
+            .then(() => res.json({message: 'Đã hết phiên đăng nhập'}))
+        
     }
 }
 
