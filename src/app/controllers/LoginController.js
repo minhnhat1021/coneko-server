@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User')
 
+
+
 let infoLogin = {
     data: [
         
@@ -17,6 +19,7 @@ class LoginController {
     }
     // [POST]
     login(req, res, next) {
+        console.log(req.headers['authorization'])
         const {userName, password} = req.body
         User.findOne({userName: userName}) 
             .then((user) => {
@@ -25,11 +28,12 @@ class LoginController {
                         if (err) {
                             throw new Error('lỗi giải mã mật khẩu');
                         }if (isMatch) {
-                            //1 tao json webtoken                    
-                            const token = jwt.sign({ userId: user._id }, crypto.randomBytes(20).toString('hex'), { expiresIn: '1h' });
-
-                            infoLogin.data.push(user)
-                            res.status(200).json({ message: 'Đăng nhập thành công', token })
+                            //1 tao json webtoken              
+                            // crypto.randomBytes(20).toString('hex')  để tạo JWT_secret    
+                            
+                            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET , { expiresIn: '1h' });
+                            infoLogin.data.push({user, token})
+                            res.status(200).json({ message: 'Đăng nhập thành công', token})
                         } 
                     })   
                 }else {

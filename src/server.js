@@ -2,12 +2,15 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const port = 5000   
+
 var session = require('express-session')
 const cors = require('cors');
 
+const dotenv = require('dotenv')
+dotenv.config()
+
 const route = require('./routes')
 const db = require('./config/db')
-
 // cho phép gọi lên backend
 app.use(cors());
 

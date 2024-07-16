@@ -34,7 +34,7 @@ class RegisterController {
                         }
                         const userRegister = new User({password: hashedPassword, email, fullName, displayName, userName, isActive});
 
-                        const token = jwt.sign({ userId: userRegister._id }, crypto.randomBytes(20).toString('hex'), { expiresIn: '1h' });
+                        const token = jwt.sign({ userId: userRegister._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
                         userRegister
                             .save()
