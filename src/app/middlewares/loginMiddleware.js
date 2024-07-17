@@ -13,7 +13,6 @@ module.exports = function loginMiddleware (req, res, next) {
     try{
         
         const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
-        console.log(decoded);
         req.user = decoded;
         next();
     }

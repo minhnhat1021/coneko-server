@@ -23,12 +23,11 @@ class RegisterController {
                 if(user) {
                     res.json({ msg: 'Email đã tồn tại '})
                 }else {
-                    let jwtSecret = crypto.randomBytes(20).toString('hex')
                     const {fullName, email, password} = req.body
                     const displayName = fullName
                     const userName = email
                     const isActive = true;
-                    const verifyToken = jwtSecret
+                    
                     // Tạo token mã hóa JWT
 
                     // Mã hóa password theo bảng mật khẩu bcrypt trước khi đưa vào db
@@ -36,10 +35,12 @@ class RegisterController {
                         if (err) {
                             throw new Error('lỗi mã hóa mật khẩu');
                         }
-                         
-                        const userRegister = new User({password: hashedPassword, email, fullName, displayName, userName, isActive, verifyToken});
+                        
+                        const token = jwt.sign({ }, process.env.JWT_SECRET, { expiresIn: '1h' });
+                        const verifyToken = token
+                        
+                        const userRegister = new User({password: hashedPassword, email, fullName, verifyToken, displayName, userName, isActive, verifyToken});
 
-                        const token = jwt.sign({ userId: userRegister._id }, jwtSecret, { expiresIn: '1h' });
 
                         userRegister
                             .save()
