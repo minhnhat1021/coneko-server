@@ -10,14 +10,15 @@ module.exports = function loginMiddleware (req, res, next) {
     }
 
     // Nếu có token
-    User.findOne({_id: req.body.id})
-        .then((user) => {
-            if(!user) {
-                return res.json({message: 'Không tìm thấy user này trên hệ thống'})
-            }
-            const decoded = jwt.verify(req.body.token, user.verifyToken);
-            req.user = decoded;
-            next();
-        })
+    try{
+        
+        const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
+        console.log(decoded);
+        req.user = decoded;
+        next();
+    }
+    catch {
+        console.log("loi about")
+    }
     
 }

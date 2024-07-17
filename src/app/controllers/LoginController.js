@@ -28,13 +28,13 @@ class LoginController {
                             throw new Error('lỗi giải mã mật khẩu');
                         }if (isMatch) {
                             //1 tao json webtoken        
-                            const jwtSecret = crypto.randomBytes(20).toString('hex') 
-                            const token = jwt.sign({ userId: user._id }, jwtSecret,  { expiresIn: '1h' });
+                            
+                            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
                 
                             infoLogin.data.push({user, token})
 
                             User.updateOne({ _id: user._id }, {
-                                verifyToken: jwtSecret
+                                verifyToken: token
                             })
                                 .then(() => res.status(200).json({ message: 'Đăng nhập thành công', token, userId: user._id}))
                         } 
