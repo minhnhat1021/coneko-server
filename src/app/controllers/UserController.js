@@ -12,9 +12,20 @@ class UserController {
 
     // [Get] /user/account
     account(req, res, next) {
-        User.find({})
-            .then(users => res.json(users))
-            .catch(next)
+        const userDataToken = req.user
+        res.json({message: 'truy cập vào account thành công', data: userDataToken})
+    }
+
+    // [Get] /user/account
+    purchase(req, res, next) {
+        const userDataToken = req.user
+        res.json({message: 'truy cập vào purchase thành công', data: userDataToken})
+    }
+
+    // [Get] /user/account
+    mybooking(req, res, next) {
+        const userDataToken = req.user
+        res.json({message: 'truy cập vào mybooking thành công', data: userDataToken})
     }
     
     // [Get] /user/search
