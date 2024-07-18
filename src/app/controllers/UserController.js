@@ -27,7 +27,10 @@ class UserController {
         const userDataToken = req.user
         res.json({message: 'truy cập vào mybooking thành công', data: userDataToken})
     }
-    
+    paycard(req, res, next) {
+        const userDataToken = req.user
+        res.json({message: 'truy cập vào mybooking thành công', data: userDataToken})
+    }
     // [Get] /user/search
     findUser(req, res) {
         const {q} = req.query
