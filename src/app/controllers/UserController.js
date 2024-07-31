@@ -3,13 +3,6 @@ const User = require('../models/User')
 
 class UserController {
 
-    // [Get] /user
-    index(req, res, next) {
-        User.find({})
-            .then(users => res.json(users))
-            .catch(next)
-    }
-
     // [Get] /user/account
     account(req, res, next) {
         const userDataToken = req.user
