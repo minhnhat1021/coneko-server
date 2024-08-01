@@ -2,6 +2,14 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const port = 5000   
+const path = require('path')
+
+
+//muter
+
+
+
+
 
 var session = require('express-session')
 const cors = require('cors');
@@ -13,6 +21,9 @@ const route = require('./routes')
 const db = require('./config/db')
 // cho phép gọi lên backend
 app.use(cors());
+
+app.use(express.static(path.join(__dirname, 'public')))
+
 
 // connect to db
 db.connect()

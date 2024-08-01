@@ -22,6 +22,14 @@ class AdminController {
 
     }
 
+    // [POST] /admin/upload
+    uploadRoom(req, res, next) {
+        console.log(req.file)
+
+        res.json(req.file)
+
+    }
+
     
 }
 
