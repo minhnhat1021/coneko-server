@@ -14,6 +14,7 @@ const adminController = require('../app/controllers/AdminController')
 router.post('/upload', uploadMiddleware,  adminController.uploadRoom)
 router.post('/create-room',  adminController.createRoom)
 
+router.get('/statistics-room',  adminController.statisticsRoom)
 router.get('/room-list',  adminController.showRoom)
 
 

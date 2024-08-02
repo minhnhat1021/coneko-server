@@ -18,7 +18,7 @@ const Room = new Schema({
 
     image: { type: String, default: '' },
     smoking: { type: Boolean, default: false }, 
-    status: { type: String, enum: ['available', 'booked', 'unavailable'], default: 'available' },
+    status: { type: String, enum: ['available', 'booked', 'inUse'], default: 'available' },
     roomSize: { type: Number, default: 40 }, 
     view: { type: String, default: '' } // Loại view (ví dụ: sea view, city view)
 
