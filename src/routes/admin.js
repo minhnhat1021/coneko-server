@@ -17,5 +17,9 @@ router.post('/create-room',  adminController.createRoom)
 router.get('/statistics-room',  adminController.statisticsRoom)
 router.get('/room-list',  adminController.showRoom)
 
+router.get('/:id/room-edit',  adminController.editRoom)
+router.put('/:id/room-update',  adminController.updateRoom)
+router.delete('/:id/room-delete',  adminController.deleteRoom)
+
 
 module.exports = router 

@@ -59,6 +59,24 @@ class AdminController {
            .catch(next)
     }
     
+    editRoom(req, res, next) {
+        Room.findById(req.params.id)
+            .then(room => res.json(room))
+            .catch(next)
+    }
+    updateRoom(req, res, next) {
+        Room.updateOne({ _id: req.params.id}, req.body)
+            .then(() => res.json('Update room thành công'))
+            .catch(next)
+        
+    }
+
+    deleteRoom(req, res, next) {
+        Room.deleteOne({ _id: req.body.id})
+            .then(() => res.json('Delete room thành công'))
+            .catch(next)
+        
+    }
     // [POST] /admin/create-room
     createRoom(req, res, next) {
         const newRoom = new Room(req.body)
