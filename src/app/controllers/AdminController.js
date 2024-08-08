@@ -4,7 +4,23 @@ const Room = require('../models/Room')
 class AdminController {
 
 
+    // [Get] /admin/room
+    async Room(req, res, next) {
+        try {
+            const roomList = await Room.countDocuments({ })
+            const roomTrash = await Room.countDocumentsWithDeleted({ deleted: true })
     
+            res.status(200).json({
+                data: {
+                    roomList,
+                    roomTrash,
+                }  
+            })
+        } catch (error) {
+            res.status(500).json({ message: 'lỗi truy xuất dữ liệu Room' })
+        }
+    }
+
     // [Get] /admin/statisticsRoom
     async statisticsRoom(req, res, next) {
         try {
@@ -48,10 +64,12 @@ class AdminController {
                 }  
             })
         } catch (error) {
-            res.status(500).json({ message: 'Internal Server Error' })
+            res.status(500).json({ message: 'lỗi thống kê' })
         }
     }
 
+
+    // Room List -----------------------------------------------------------------------------------------
     // [Get] /admin/create-room
     showRoom(req, res, next) {
         Room.find({})
@@ -68,15 +86,18 @@ class AdminController {
         Room.updateOne({ _id: req.params.id}, req.body)
             .then(() => res.json('Update room thành công'))
             .catch(next)
-        
     }
 
+    // [DELETE soft] /admin/delete-room
     deleteRoom(req, res, next) {
-        Room.deleteOne({ _id: req.body.id})
+        Room.delete({ _id: req.body.id})
             .then(() => res.json('Delete room thành công'))
             .catch(next)
-        
     }
+
+
+    // Room Create -----------------------------------------------------------------------------------------
+
     // [POST] /admin/create-room
     createRoom(req, res, next) {
         const newRoom = new Room(req.body)
@@ -85,7 +106,6 @@ class AdminController {
             .then(() => res.json(req.body))
             .then(() => res.json({message: 'Thêm phòng thành công'}))
             .catch(next)
-
     }
 
     // [POST] /admin/upload
@@ -94,6 +114,26 @@ class AdminController {
 
         res.json(req.file)
 
+    }
+
+    // Room Trash -----------------------------------------------------------------------------------------
+    
+    roomTrash(req, res, next) {
+        Room.findWithDeleted({ deleted: true})
+           .then(rooms => res.json(rooms))
+           .catch(next)
+    }
+
+    restoreRoom(req, res, next) {
+        Room.restore({ _id: req.params.id})
+            .then(() => res.json('Khôi phục room thành công'))
+            .catch(next)
+    }
+
+    forceDeleteRoom(req, res, next) {
+        Room.deleteOne({ _id: req.params.id})
+            .then(() => res.json('Xóa vĩnh viễn room thành công'))
+            .catch(next)
     }
 
     

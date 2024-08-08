@@ -16,3 +16,6 @@ III. Cài bcrypt jsonwebtoken
     1. npm install bcrypt jsonwebtoken
     2. bcrypt: dùng để mã hõa mật khẩu khi đưa vào database
     3. jsonwebtoken: để gửi ra 1 thông báo xác nhận đã đăng nhập
+IV. Cài mongoose-delete
+    1. npm i mongoose-delete
+    2. Hỗ trợ delete soft trong mongodb

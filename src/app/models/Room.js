@@ -1,5 +1,7 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
+
+const mongooseDelete = require('mongoose-delete')
 
 const Room = new Schema({
     name: { type: String, default: '' },
@@ -24,6 +26,13 @@ const Room = new Schema({
 
 }, {
     timestamps: true // Tự động thêm createdAt và updatedAt
-});
+})
 
-module.exports = mongoose.model('Room', Room);
+
+// add plugin
+Room.plugin(mongooseDelete, {
+    deletedAt: true,
+    overrideMethods: 'all', 
+})
+
+module.exports = mongoose.model('Room', Room)
