@@ -4,6 +4,8 @@ const mongoose = require('mongoose')
 // Schema để db có tính liên kết chặt chẽ hơn
 const Schema = mongoose.Schema
 
+const mongooseDelete = require('mongoose-delete')
+
 
 // nạp dữ liệu db bảng user vào biến User 
 const User = new Schema({
@@ -21,5 +23,10 @@ const User = new Schema({
     timestamps: true // tạo dữ liệu về thời gian tạo và xóa User
 })
 
+// add plugin
+User.plugin(mongooseDelete, {
+    deletedAt: true,
+    overrideMethods: 'all', 
+})
 
 module.exports = mongoose.model('User', User)

@@ -10,8 +10,18 @@ const adminController = require('../app/controllers/AdminController')
 
 
 
-// Room controller
 
+router.get('/user',  adminController.User)
+router.get('/user-list',  adminController.userList)
+
+
+router.get('/banned-users',  adminController.bannedUsers)
+
+router.delete('/:id/user-ban',  adminController.userBan)
+router.delete('/:id/user-force',  adminController.forceDeleteUser)
+router.patch('/:id/user-restore',  adminController.restoreUser)
+
+// Room controller
 
 router.get('/room',  adminController.Room)
 router.get('/statistics-room',  adminController.statisticsRoom)

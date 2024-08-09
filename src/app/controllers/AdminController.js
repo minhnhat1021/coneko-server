@@ -1,9 +1,62 @@
 const Room = require('../models/Room')
-
+const User = require('../models/User')
 
 class AdminController {
 
 
+    // [Get] /admin/user
+    async User(req, res, next) {
+        try {
+            const roomList = await Room.countDocuments({ })
+            const roomTrash = await Room.countDocumentsWithDeleted({ deleted: true })
+    
+            res.status(200).json({
+                data: {
+                    roomList,
+                    roomTrash,
+                }  
+            })
+        } catch (error) {
+            res.status(500).json({ message: 'lỗi truy xuất dữ liệu Room' })
+        }
+    }
+
+    // [Get] /admin/user-list
+
+    userList(req, res, next) {
+        User.find({})
+           .then(users => res.json(users))
+           .catch(next)
+    }
+
+    // [Get] /admin/id/user-ban
+    userBan(req, res, next) {
+        User.delete({ _id: req.body.id})
+            .then(() => res.json('Ban user thành công'))
+            .catch(next)
+    }
+
+
+    // [Get] /admin/user-ban
+    bannedUsers(req, res, next) {
+        User.findWithDeleted({ deleted: true})
+           .then(rooms => res.json(rooms))
+           .catch(next)
+    }
+    
+    restoreUser(req, res, next) {
+        User.restore({ _id: req.params.id})
+            .then(() => res.json('Khôi phục user thành công'))
+            .catch(next)
+    }
+
+    forceDeleteUser(req, res, next) {
+        User.deleteOne({ _id: req.params.id})
+            .then(() => res.json('Xóa vĩnh viễn user thành công'))
+            .catch(next)
+    }
+
+    // Room ----------------------------------------------------------------
     // [Get] /admin/room
     async Room(req, res, next) {
         try {
@@ -137,6 +190,8 @@ class AdminController {
     }
 
     
+
+
 }
 
 module.exports = new AdminController
