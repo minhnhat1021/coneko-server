@@ -13,8 +13,15 @@ module.exports = function loginMiddleware (req, res, next) {
     try{
         
         const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
+        User.findOne({_id: decoded.userId}) 
+            .then((user) => {
+                if(user) {
+                    req.user = user
+                next();
+                }else {
+                    res.json({msg: 'Không tìm thấy tài khoản này'})
+                }
+            }) 
     }
     catch {
         console.log("loi about")

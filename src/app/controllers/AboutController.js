@@ -5,8 +5,8 @@ class AboutController {
 
     // [Get] / about
     about(req, res, next) {
-        const userDataToken = req.user
-        res.json({message: 'truy cập vào about thành công', data: userDataToken})
+        const userData = req.user
+        res.json({message: 'truy cập vào about thành công',  userData})
     }
     
 }
