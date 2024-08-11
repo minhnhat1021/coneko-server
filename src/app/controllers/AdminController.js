@@ -7,13 +7,13 @@ class AdminController {
     // [Get] /admin/user
     async User(req, res, next) {
         try {
-            const roomList = await Room.countDocuments({ })
-            const roomTrash = await Room.countDocumentsWithDeleted({ deleted: true })
+            const userList = await User.countDocuments({ })
+            const bannedUsers = await User.countDocumentsWithDeleted({ deleted: true })
     
             res.status(200).json({
                 data: {
-                    roomList,
-                    roomTrash,
+                    userList,
+                    bannedUsers
                 }  
             })
         } catch (error) {

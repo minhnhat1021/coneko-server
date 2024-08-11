@@ -3,11 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User')
 
-let infoRegiter = {
-    data: [
 
-    ]
-}
 class RegisterController {
 
     //[GET] /register/infoRegister
@@ -44,7 +40,6 @@ class RegisterController {
 
                         userRegister
                             .save()
-                            .then(() => {infoRegiter.data.push(userRegister)})
                             .then(() => 
                                 res.status(200).json({ message: 'Đăng ký thành công', token, userId: userRegister._id })
                             )

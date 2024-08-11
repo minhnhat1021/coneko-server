@@ -7,6 +7,7 @@ const userController = require('../app/controllers/UserController')
 
 
 // user controller
+router.post('/', loginMiddleware,  userController.show)
 
 router.post('/purchase/list', loginMiddleware,  userController.purchase)
 router.post('/account', loginMiddleware,  userController.account)

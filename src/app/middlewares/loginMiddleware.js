@@ -6,21 +6,20 @@ module.exports = function loginMiddleware (req, res, next) {
 
     // Nếu không có token
     if(!req.body.token) {
-        return res.status(401).json({ message: 'Đăng nhập để trải nhiệm không gian của chúng tôi nào'});
+        return 
     }
 
     // Nếu có token
-    try{
-        
-        const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
+    try {
+        const decoded = jwt.verify(req.body?.token, process.env.JWT_SECRET);
         User.findOne({_id: decoded.userId}) 
             .then((user) => {
                 if(user) {
                     req.user = user
-                next();
                 }else {
                     res.json({msg: 'Không tìm thấy tài khoản này'})
                 }
+                next();
             }) 
     }
     catch {

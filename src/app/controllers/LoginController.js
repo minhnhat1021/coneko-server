@@ -4,12 +4,6 @@ const crypto = require('crypto');
 const User = require('../models/User')
 
 
-let infoLogin = {
-    data: [
-        
-    ]
-}
-
 class LoginController {
     
     //[GET] /login/infoLogin
@@ -31,8 +25,6 @@ class LoginController {
                             
                             const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
                 
-                            infoLogin.data.push({user, token})
-
                             User.updateOne({ _id: user._id }, {
                                 verifyToken: token
                             })
@@ -49,9 +41,8 @@ class LoginController {
         User.updateOne({_id: req.body.id}, {
             verifyToken: ''
         })
-            .then(() => infoLogin.data.pop())
+            
             .then(() => res.json({message: 'Đã hết phiên đăng nhập'}))
-        
     }
 }
 

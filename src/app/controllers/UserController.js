@@ -3,26 +3,28 @@ const User = require('../models/User')
 
 class UserController {
 
+
+    // [Get] /user/account
+    show(req, res, next) {
+        res.json(req.user)
+    }
+
     // [Get] /user/account
     account(req, res, next) {
-        const userDataToken = req.user
-        res.json({message: 'truy cập vào account thành công', data: userDataToken})
+        res.json(req.user)
     }
 
     // [Get] /user/account
     purchase(req, res, next) {
-        const userDataToken = req.user
-        res.json({message: 'truy cập vào purchase thành công', data: userDataToken})
+        res.json(req.user)
     }
 
     // [Get] /user/account
     mybooking(req, res, next) {
-        const userDataToken = req.user
-        res.json({message: 'truy cập vào mybooking thành công', data: userDataToken})
+        res.json(req.user)
     }
     paycard(req, res, next) {
-        const userDataToken = req.user
-        res.json({message: 'truy cập vào mybooking thành công', data: userDataToken})
+        res.json(req.user)
     }
     // [Get] /user/search
     findUser(req, res) {
