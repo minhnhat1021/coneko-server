@@ -32,17 +32,23 @@ class RegisterController {
                             throw new Error('lỗi mã hóa mật khẩu');
                         }
                         
-                        const token = jwt.sign({ }, process.env.JWT_SECRET, { expiresIn: '1h' });
-                        const verifyToken = token
                         
-                        const userRegister = new User({password: hashedPassword, email, fullName, verifyToken, displayName, userName, isActive, verifyToken});
+                        
+                        const userRegister = new User({password: hashedPassword, email, fullName, displayName, userName, isActive});
 
 
                         userRegister
                             .save()
-                            .then(() => 
+                            
+                            .then(() => {
+
+                                const token = jwt.sign({ userId: userRegister._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
+                                User.updateOne({ _id: userRegister._id }, {
+                                    verifyToken: token
+                                })
+
                                 res.status(200).json({ message: 'Đăng ký thành công', token, userId: userRegister._id })
-                            )
+                            })
                             .catch(next)
                     })
                     

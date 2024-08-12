@@ -11,7 +11,7 @@ module.exports = function loginMiddleware (req, res, next) {
 
     // Nếu có token
     try {
-        const decoded = jwt.verify(req.body?.token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
         User.findOne({_id: decoded.userId}) 
             .then((user) => {
                 if(user) {
