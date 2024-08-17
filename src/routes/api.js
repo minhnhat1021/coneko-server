@@ -8,6 +8,7 @@ const userRouter = require('./user');
 const usersRouter = require('./users');
 
 const roomsRouter = require('./rooms');
+const roomRouter = require('./room');
 
 const aboutRouter = require('./about');
 const adminRouter = require('./admin')
@@ -24,6 +25,7 @@ const adminRouter = require('./admin')
 
 
     router.use('/rooms', roomsRouter)
+    router.use('/room', roomRouter)
 
     router.use('/about', aboutRouter)
     router.use('/admin', adminRouter)
