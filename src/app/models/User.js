@@ -15,6 +15,23 @@ const User = new Schema({
     password: {type: String, default: ''},
     displayName: {type: String, default: ''},
     avatar: {type: String, default: ''},
+    accountBalance: {type: String, default: '100000000'},
+    totalSpent: {type: String, default: ''},
+    bookedRooms: [
+        {
+            roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+            bookingDate: { type: Date, default: Date.now },
+            amountSpent: { type: Number }
+        }
+    ],
+    currentRooms: [
+        {
+            roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+            checkInDate: { type: Date },
+            checkOutDate: { type: Date },
+            amountSpent: { type: Number }
+        }
+    ],
     role: {type: String, default: ''},
     isActive: {type: String, default: ''},
     verifyToken: {type: String, default: ''},

@@ -22,7 +22,7 @@ class RegisterController {
                     const {fullName, email, password} = req.body
                     const displayName = fullName
                     const userName = email
-                    const isActive = true;
+                    const isActive = true
                     
                     // Tạo token mã hóa JWT
 
@@ -31,8 +31,6 @@ class RegisterController {
                         if (err) {
                             throw new Error('lỗi mã hóa mật khẩu');
                         }
-                        
-                        
                         
                         const userRegister = new User({password: hashedPassword, email, fullName, displayName, userName, isActive});
 

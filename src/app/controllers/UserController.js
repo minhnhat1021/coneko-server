@@ -4,6 +4,10 @@ const User = require('../models/User')
 class UserController {
 
 
+    userDetail(req, res, next) {
+        User.findOne({fullName: req.params.name})
+            .then(user => res.json(user))
+    }
     // [Get] /user/account
     show(req, res, next) {
         res.json(req.user)

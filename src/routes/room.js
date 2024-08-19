@@ -8,5 +8,6 @@ const roomController = require('../app/controllers/RoomController')
 
 // user controller
 router.get('/:name/room-detail', roomController.roomDetail)
+router.post('/payment', roomController.roomPayment)
 
 module.exports = router 
