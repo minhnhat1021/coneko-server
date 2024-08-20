@@ -15,7 +15,7 @@ module.exports = function loginMiddleware (req, res, next) {
         User.findOne({_id: decoded.userId}) 
             .then((user) => {
                 if(user) {
-                    req.user = user
+                    req.user = {data : user}
                 }else {
                     res.json({msg: 'Không tìm thấy tài khoản này'})
                 }
