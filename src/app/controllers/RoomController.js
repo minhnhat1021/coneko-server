@@ -45,7 +45,22 @@ class RoomsController {
                 amountSpent: totalPrice
             })
             await user.save()
-            res.json({ data: { message: 'Thanh toán thành công', newAccountBalance } })
+
+            const room = await Room.findById(roomId)
+
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            room.bookedUsers.push({
+                userId
+            })
+
+            // Cập nhật phòng đang có quyền sử dụng
+            room.currentUsers.push({
+                userId,
+                checkInDate: startDate,
+                checkOutDate: endDate,
+            })
+            await room.save()
+            res.json({ data: { message: 'Thanh toán thành công', newAccountBalance, room } })
 
         } catch(err) {
             next(err)

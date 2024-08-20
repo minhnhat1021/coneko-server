@@ -22,7 +22,21 @@ const Room = new Schema({
     smoking: { type: Boolean, default: false }, 
     status: { type: String, enum: ['available', 'booked', 'inUse'], default: 'available' },
     roomSize: { type: Number, default: 40 }, 
-    view: { type: String, default: '' } // Loại view (ví dụ: sea view, city view)
+    view: { type: String, default: '' } ,
+
+    bookedUsers: [
+        {
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            
+        }
+    ],
+    currentUsers: [
+        {
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            checkInDate: { type: Date },
+            checkOutDate: { type: Date },
+        }
+    ],
 
 }, {
     timestamps: true // Tự động thêm createdAt và updatedAt
