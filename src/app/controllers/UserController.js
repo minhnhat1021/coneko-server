@@ -24,7 +24,7 @@ class UserController {
     }
 
     // [Get] /user/account
-    mybooking(req, res, next) {
+    bookingHistory(req, res, next) {
         res.json(req.user)
     }
     paycard(req, res, next) {

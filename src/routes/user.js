@@ -12,7 +12,7 @@ router.get('/:name',  userController.userDetail)
 
 router.post('/purchase/list', loginMiddleware,  userController.purchase)
 router.post('/account', loginMiddleware,  userController.account)
-router.post('/mybooking', loginMiddleware,  userController.mybooking)
+router.post('/booking-history', loginMiddleware,  userController.bookingHistory)
 router.post('/paycard', loginMiddleware,  userController.paycard)
 
 
