@@ -37,7 +37,7 @@ class UserController {
             .then((user) => {
 
                 if(user) {
-                    res.status(200).json({ message: 'Đã tìm thấy tài khoản', user })
+                    res.status(200).json({ msg: 'Đã tìm thấy tài khoản', user })
                 }else {
                     res.json({msg: 'Không tìm thấy tài khoản này'})
                 }

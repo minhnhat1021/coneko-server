@@ -23,7 +23,7 @@ class RoomsController {
             if(data.length === 0) {
                 res.json({msg: 'Không tìm thấy room nào', data : []})
             }else {
-                res.status(200).json({ meg: 'Đã tìm thấy room', data })
+                res.status(200).json({ msg: 'Đã tìm thấy room', data })
             }
         })    
     }

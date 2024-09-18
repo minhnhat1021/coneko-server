@@ -70,7 +70,7 @@ class AdminController {
                 }  
             })
         } catch (error) {
-            res.status(500).json({ message: 'lỗi truy xuất dữ liệu Room' })
+            res.status(500).json({ msg: 'lỗi truy xuất dữ liệu Room' })
         }
     }
 
@@ -157,7 +157,7 @@ class AdminController {
 
         newRoom.save()
             .then(() => res.json(req.body))
-            .then(() => res.json({message: 'Thêm phòng thành công'}))
+            .then(() => res.json({msg: 'Thêm phòng thành công'}))
             .catch(next)
     }
 

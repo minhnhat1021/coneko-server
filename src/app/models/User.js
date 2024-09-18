@@ -15,21 +15,38 @@ const User = new Schema({
     password: {type: String, default: ''},
     displayName: {type: String, default: ''},
     avatar: {type: String, default: ''},
-    accountBalance: {type: String, default: '100000000'},
+    accountBalance: {type: Number, default: 100000000},
     totalSpent: {type: String, default: ''},
     bookedRooms: [
         {
             roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
-            bookingDate: { type: Date, default: Date.now },
-            amountSpent: { type: Number }
+            checkInDate: {type: Date}, 
+            checkOutDate: {type: Date}, 
+            days: {type: Number},
+            roomPrice: {type: Number}, 
+            roomCharge: {type: Number}, 
+            amenitiesPrice: {type: Number}, 
+            amenitiesCharge: {type: Number}, 
+            amenities: {type: Object}, 
+            bookingDate: { type: Date },
+            amountSpent: { type: Number },
+            _id: false
         }
     ],
     currentRooms: [
         {
             roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
-            checkInDate: { type: Date },
-            checkOutDate: { type: Date },
-            amountSpent: { type: Number }
+            checkInDate: {type: Date}, 
+            checkOutDate: {type: Date}, 
+            days: {type: Number},
+            roomPrice: {type: Number}, 
+            roomCharge: {type: Number}, 
+            amenitiesPrice: {type: Number}, 
+            amenitiesCharge: {type: Number}, 
+            amenities: {type: Object}, 
+            bookingDate: { type: Date },
+            amountSpent: { type: Number },
+            _id: false
         }
     ],
     role: {type: String, default: ''},

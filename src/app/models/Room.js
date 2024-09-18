@@ -7,7 +7,7 @@ const Room = new Schema({
     name: { type: String, default: '' },
     desc: { type: String, default: '' }, 
     overView: { type: String, default: '' }, 
-    price: { type: String, required: true }, 
+    price: { type: Number, required: true }, 
 
 
     bedType: { type: String, enum: ['single', 'double', 'queen', 'king', 'twin', 'bunk'], default: 'single' },

@@ -6,7 +6,7 @@ class AboutController {
     // [Get] / about
     about(req, res, next) {
         const userData = req.user
-        res.json({message: 'truy cập vào about thành công',  userData})
+        res.json({msg: 'truy cập vào about thành công',  userData})
     }
     
 }
