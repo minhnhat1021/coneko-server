@@ -10,6 +10,12 @@ class RoomsController {
             .then(data => res.json({data}) )
             .catch(err => next(err))
     }
+
+    findRoomById(req, res, next) {
+        Room.findById(req.params.id)
+            .then(data => res.json(data) )
+            .catch(err => next(err))
+    }
     // [Post] /Room/
 
     async roomPayment(req, res, next) {
