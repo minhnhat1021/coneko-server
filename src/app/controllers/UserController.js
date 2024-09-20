@@ -27,9 +27,59 @@ class UserController {
     bookingHistory(req, res, next) {
         res.json(req.user)
     }
+    
+    // [Get] /user/account
+    favoriteRooms(req, res, next) {
+        res.json(req.user)
+    }
     paycard(req, res, next) {
         res.json(req.user)
     }
+
+
+    // [Patch] /favorite-rooms/add
+
+    async addFavoriteRooms(req, res, next) {
+        try {
+            const { userId, roomId } = req.body
+
+            const user = await User.findById(userId)
+            if (!user) {
+                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
+            }
+            user.favoriteRooms.push(roomId)
+            await user.save()
+
+            res.json({ data: { msg: 'Lưu thành công' } })
+
+        } catch(err) {
+            next(err)
+        }
+    }
+
+    // [Patch] /favorite-rooms/remove
+
+    async removeFavoriteRooms(req, res, next) {
+        try {
+            const { userId, roomId } = req.body
+
+            const user = await User.findById(userId)
+            if (!user) {
+                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
+            }
+            user.favoriteRooms = user.favoriteRooms.filter(function(a) {
+                return a !== roomId
+            })
+            
+            await user.save()
+
+            res.json({ data: { msg: 'Bỏ lưu thành công' } })
+            
+        } catch(err) {
+            next(err)
+        }
+    }
+
     // [Get] /user/search
     findUser(req, res) {
         const {q} = req.query

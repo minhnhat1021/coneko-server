@@ -13,7 +13,12 @@ router.get('/:name',  userController.userDetail)
 router.post('/purchase/list', loginMiddleware,  userController.purchase)
 router.post('/account', loginMiddleware,  userController.account)
 router.post('/booking-history', loginMiddleware,  userController.bookingHistory)
+router.post('/favorite-rooms', loginMiddleware,  userController.favoriteRooms)
 router.post('/paycard', loginMiddleware,  userController.paycard)
+
+router.patch('/favorite-rooms/add',  userController.addFavoriteRooms)
+router.patch('/favorite-rooms/remove',  userController.removeFavoriteRooms)
+
 
 
 module.exports = router 

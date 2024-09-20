@@ -17,6 +17,7 @@ const User = new Schema({
     avatar: {type: String, default: ''},
     accountBalance: {type: Number, default: 100000000},
     totalSpent: {type: String, default: ''},
+    favoriteRooms: [],
     bookedRooms: [
         {
             roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
