@@ -1,5 +1,5 @@
 const User = require('../models/User')
-
+const Room = require('../models/Room')
 
 class UserController {
 
@@ -44,10 +44,11 @@ class UserController {
             const { userId, roomId } = req.body
 
             const user = await User.findById(userId)
+            const room = await Room.findById(roomId)
             if (!user) {
                 return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
             }
-            user.favoriteRooms.push(roomId)
+            user.favoriteRooms.push(room)
             await user.save()
 
             res.json({ data: { msg: 'Lưu thành công' } })
@@ -68,7 +69,7 @@ class UserController {
                 return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
             }
             user.favoriteRooms = user.favoriteRooms.filter(function(a) {
-                return a !== roomId
+                return a._id.toString() !== roomId
             })
             
             await user.save()
