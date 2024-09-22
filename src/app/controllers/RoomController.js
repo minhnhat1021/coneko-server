@@ -1,6 +1,15 @@
 const Room = require('../models/Room')
 const User = require('../models/User')
 
+const paypal = require('paypal-rest-sdk');
+
+// Cấu hình SDK với thông tin từ PayPal Developer
+paypal.configure({
+    'mode': 'sandbox', // Hoặc 'live' nếu là môi trường thực
+    'client_id': 'AR2QfHBja3liPa_Zb9sJkXudCPKwol1aDbsjYUv9z8XbBI-qypxcnGlxaJSTkyhG8guSTvY7y3t_6Zgb',
+    'client_secret': 'ECjuH6I43Pg-RjEKcIPj0kbLMr6qsE1joJQvrGsWdNmPrk56g4NiVs1BNK-E9Q8stVaBHlqdEqEmuAwa'
+})
+
 class RoomsController {
 
     // [Get] /Room/
@@ -84,6 +93,48 @@ class RoomsController {
             next(err)
         }
         
+    }
+
+    ////////
+    roomCheckout(req, res, next) {
+        const { totalPrice } = req.body
+        // Cấu hình yêu cầu thanh toán
+        const exchangeRate = 24605
+        const amountInUSD = (totalPrice / exchangeRate).toFixed(2)
+        
+        const create_payment_json = {
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "transactions": [{
+                "amount": {
+                    "currency": "USD",
+                    "total": amountInUSD.toString()
+                },
+                "description": "This is the payment transaction description."
+            }],
+            "redirect_urls": {
+                "return_url": "http://localhost:3000/payment-successful",  // URL khi thanh toán thành công
+                "cancel_url": "http://localhost:3000/payment-cancel"    // URL khi thanh toán bị hủy
+            }
+        }
+    
+        // Gọi PayPal API để tạo giao dịch
+        paypal.payment.create(create_payment_json, function (error, payment) {
+            if (error) {
+                console.error(error)
+                res.status(500).json({ error: 'Error creating PayPal payment' })
+            } else {
+                // Trả về URL để khách hàng thực hiện thanh toán trên PayPal
+                for (let i = 0; i < payment.links.length; i++) {
+                    if (payment.links[i].rel === 'approval_url') {
+                        res.json({ data: { paymentUrl: payment.links[i].href } })
+                        break
+                    }
+                }
+            }
+        })
     }
 }
 
