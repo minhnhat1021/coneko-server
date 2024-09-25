@@ -15,6 +15,9 @@ router.post('/coneko', checkoutController.conekoCheckout)
 router.post('/paypal', checkoutController.payPalCheckout)
 router.post('/paypal/confirm', checkoutController.confirmPayPalCheckout)
 
+router.post('/vnpay', checkoutController.vnPayCheckout)
+
+
 
 
 module.exports = router 
