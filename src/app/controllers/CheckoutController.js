@@ -1,5 +1,6 @@
 const Room = require('../models/Room')
 const User = require('../models/User')
+const VnPayTransaction = require('../models/VnPayTransaction')
 
 var querystring = require('qs')
 const crypto = require('crypto')
@@ -134,7 +135,6 @@ class RoomsController {
         })
     }
 
-
     // confirm Paypal check out -------------------------------------------------------------------
 
     async confirmPayPalCheckout (req, res, next) {
@@ -224,117 +224,165 @@ class RoomsController {
 
 
     // vnPay check out -------------------------------------------------------------------
-    vnPayCheckout(req, res, next) {
-
+    async vnPayCheckout(req, res, next) {
+        try{
         
-        let { 
-            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-            amenitiesCharge, amenities,  totalPrice, roomId, userId 
-        } = req.body
+            let { 
+                startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities,  totalPrice, roomId, userId 
+            } = req.body
 
-        
-        function sortObject(obj) {
-            let sorted = {}
-            let str = []
-            let key
-            for (key in obj){
-                if (obj.hasOwnProperty(key)) {
-                str.push(encodeURIComponent(key))
+            function sortObject(obj) {
+                let sorted = {}
+                let str = []
+                let key
+                for (key in obj){
+                    if (obj.hasOwnProperty(key)) {
+                    str.push(encodeURIComponent(key))
+                    }
                 }
+                str.sort()
+                for (key = 0; key < str.length; key++) {
+                    sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+")
+                }
+                return sorted
             }
-            str.sort()
-            for (key = 0; key < str.length; key++) {
-                sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+")
+
+            let orderId = moment(new Date()).format('DDHHmmss')
+            let vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
+
+            const bookingDate = Date.now()
+            const vnPayPayment = new VnPayTransaction({orderId, userId, roomId, checkInDate: startDate, checkOutDate: endDate, days,
+                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate})
+                                
+            await vnPayPayment.save()
+            const vnPayCheckoutId = vnPayPayment._id
+
+            let vnp_Params = {}
+            vnp_Params['vnp_Version'] = '2.1.0'
+            vnp_Params['vnp_Command'] = 'pay'
+            vnp_Params['vnp_TmnCode'] = process.env.VNPAY_TMN_CODE
+            vnp_Params['vnp_Locale'] = 'vn'
+            vnp_Params['vnp_CurrCode'] = 'VND'
+            vnp_Params['vnp_TxnRef'] = orderId
+            vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId
+            vnp_Params['vnp_OrderType'] = 'other'
+            vnp_Params['vnp_Amount'] = totalPrice * 100
+            vnp_Params['vnp_ReturnUrl'] = `http://localhost:3000/payment-successful?vnPayCheckoutId=${vnPayCheckoutId}`
+            vnp_Params['vnp_IpAddr'] = '127.0.0.1'
+            vnp_Params['vnp_CreateDate'] = moment(new Date()).format('YYYYMMDDHHmmss')
+            vnp_Params['vnp_BankCode'] = 'NCB'
+
+
+            vnp_Params = sortObject(vnp_Params)
+
+            let signData = querystring.stringify(vnp_Params, { encode: false })
+            let hmac = crypto.createHmac("sha512", process.env.VNPAY_SECRET)
+            let signed = hmac.update(signData).digest("hex")
+            
+            vnp_Params['vnp_SecureHash'] = signed
+
+            vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false })
+
+            res.json({ data: { vnpUrl } })   
+
+        } catch(err) {
+            next(err)
+        }
+        
+    }
+
+    async confirmVnPayCheckout (req, res, next) {
+        try {
+
+            let { vnPayCheckoutId, vnp_Params} = req.body
+
+            const paymentDetails = await VnPayTransaction.findById(vnPayCheckoutId)
+
+            if(!paymentDetails) {
+                return res.status(404).json( { data:{ msg: 'Thanh toán không tồn tại' } })
             }
-            return sorted
+
+            const {userId, roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice,
+                amenitiesCharge, amenities, amountSpent, bookingDate} = paymentDetails
+
+            // Handle model User ----------------------------------------------------------------
+            const user = await User.findById(userId)
+            if (!user) {
+                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
+            }
+
+            user.totalSpent += amountSpent
+
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push({
+                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent, bookingDate
+            })
+
+            // Cập nhật phòng mà khách hàng đang có quyền sử dụng
+            user.currentRooms.push({
+                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent,bookingDate
+            })
+
+            
+            // Handle model Room ----------------------------------------------------------------
+            const room = await Room.findById(roomId)
+
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            room.bookedUsers.push({
+                userId
+            })
+
+            // Cập nhật phòng đang có quyền sử dụng
+            room.currentUsers.push({
+                userId,
+                checkInDate,
+                checkOutDate,
+            })
+
+
+            // Xử lý so sánh chữ ký VnPay, nếu đúng thì mới lưu thông tin phòng --------------------------
+            let secureHash = vnp_Params['vnp_SecureHash']
+        
+            delete vnp_Params['vnp_SecureHash']
+            delete vnp_Params['vnPayCheckoutId']
+        
+            function sortObject(obj) {
+                let sorted = {}
+                let str = []
+                let key
+                for (key in obj){
+                    if (obj.hasOwnProperty(key)) {
+                    str.push(encodeURIComponent(key))
+                    }
+                }
+                str.sort()
+                for (key = 0; key < str.length; key++) {
+                    sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+")
+                }
+                return sorted
+            }
+            vnp_Params = sortObject(vnp_Params)
+        
+            let signData = querystring.stringify(vnp_Params, { encode: false })
+            let hmac = crypto.createHmac("sha512", process.env.VNPAY_SECRET)
+            let signed = hmac.update(signData).digest("hex") 
+        
+            if(secureHash === signed){
+                
+                await Promise.all([user.save(), room.save()])
+                return res.json({ data: { message: 'Thanh toán VnPay và lưu dữ liệu đặt phòng thành công', paymentDetails } })
+
+            } else{
+                return res.status(400).json({data: { msg: 'Chữ ký vnPay không đúng' } })
+            }
+
+        } catch (err) {
+            next(err)
         }
-    
-        
-        process.env.TZ = 'Asia/Ho_Chi_Minh'
-    
-        let date = new Date()
-        let createDate = moment(date).format('YYYYMMDDHHmmss')
-        
-        let ipAddr = '127.0.0.1'
-
-        let tmnCode = 'T696HIB7'
-        let secretKey = 'JN7M1ZE8I0B0ZX901CI5I2KUP133Y4SB'
-        let vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
-        let returnUrl = 'http://localhost:3000/payment-successful'
-        let orderId = moment(date).format('DDHHmmss')
-        let amount = totalPrice
-        let bankCode = 'NCB'
-        
-        let locale = ''
-        if(locale === null || locale === ''){
-            locale = 'vn'
-        }
-        let currCode = 'VND'
-        let vnp_Params = {}
-        vnp_Params['vnp_Version'] = '2.1.0'
-        vnp_Params['vnp_Command'] = 'pay'
-        vnp_Params['vnp_TmnCode'] = tmnCode
-        vnp_Params['vnp_Locale'] = locale
-        vnp_Params['vnp_CurrCode'] = currCode
-        vnp_Params['vnp_TxnRef'] = orderId
-        vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId
-        vnp_Params['vnp_OrderType'] = 'other'
-        vnp_Params['vnp_Amount'] = amount * 100
-        vnp_Params['vnp_ReturnUrl'] = returnUrl
-        vnp_Params['vnp_IpAddr'] = ipAddr
-        vnp_Params['vnp_CreateDate'] = createDate
-        if(bankCode !== null && bankCode !== ''){
-            vnp_Params['vnp_BankCode'] = bankCode
-        }
-
-        vnp_Params = sortObject(vnp_Params)
-        let signData = querystring.stringify(vnp_Params, { encode: false })
-        let hmac = crypto.createHmac("sha512", secretKey)
-        let signed = hmac.update(signData).digest("hex")
-        vnp_Params['vnp_SecureHash'] = signed;
-        vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false })
-
-        res.json({ data: { vnpUrl } })   
-        
-
     }
 }
 
 module.exports = new RoomsController
-
-// const transactionDetails = {
-        //     vnp_Version: '2.1.0',
-        //     vnp_Command: 'pay',
-        //     vnp_TmnCode: 'T696HIB7', 
-        //     vnp_Amount: totalPrice * 100, 
-        //     vnp_CurrCode: 'VND',
-        //     vnp_TxnRef: `TXN${Date.now()}`, 
-        //     vnp_OrderInfo: `Đặt phòng từ ${startDate} đến ${endDate}`,
-        //     vnp_OrderType: 'billpayment',
-        //     vnp_ReturnUrl: 'http://localhost:3000/payment-successful', 
-        //     vnp_CreateDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-        //     vnp_Locale: 'vn', 
-        //     vnp_BankCode: '', 
-        // }
-    
-        // // Tạo chuỗi hash
-        // const sortedKeys = Object.keys(transactionDetails).sort()
-        // let hashString = ''
-        // sortedKeys.forEach(key => {
-        //     hashString += `${key}=${transactionDetails[key]}&`
-        // })
-        // hashString += `vnp_SecureHashType=SHA256&`
-        // const secureHash = crypto.createHmac('sha512', '7Z6AMML8B471LAB0AXLFJ1A143A7OQDE').update(hashString).digest('hex')
-    
-        // // Thêm trường secureHash vào transactionDetails
-        // transactionDetails.vnp_SecureHash = secureHash
-    
-        // try {
-        //     // Chuyển hướng đến URL thanh toán VNPAY
-        //     const paymentUrl = `https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?${new URLSearchParams(transactionDetails).toString()}`
-        //     res.json({ data: { paymentUrl } })
-
-        // } catch (error) {
-        //     console.error(error)
-        //     res.status(500).json({ data: { message: 'Lỗi khi thanh toán vnPay' } })
-        // }
