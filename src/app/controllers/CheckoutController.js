@@ -383,6 +383,26 @@ class RoomsController {
             next(err)
         }
     }
+    async vnPayCheckoutDetails (req, res, next) {
+        try {
+
+            let { vnPayCheckoutId, vnp_Params} = req.body
+
+            const paymentDetails = await VnPayTransaction.findById(vnPayCheckoutId)
+
+            if(!paymentDetails) {
+                return res.status(404).json( { data:{ msg: 'Thanh toán không tồn tại' } })
+            }
+
+            const {userId, roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice,
+                amenitiesCharge, amenities, amountSpent, bookingDate} = paymentDetails
+
+            return res.json({ data: { message: 'Dữ liệu chi tiết khi đặt phòng thanh toán qua vnPay', paymentDetails } })
+
+        } catch (err) {
+            next(err)
+        }
+    }
 }
 
 module.exports = new RoomsController
