@@ -19,6 +19,11 @@ router.post('/vnpay', checkoutController.vnPayCheckout)
 router.post('/vnpay/confirm', checkoutController.confirmVnPayCheckout)
 router.post('/vnpay/details', checkoutController.vnPayCheckoutDetails)
 
+router.post('/zalopay', checkoutController.zaloPayCheckout)
+router.post('/zalopay/confirm', checkoutController.confirmZaloPayCheckout)
+router.post('/zalopay/status/:apptransid', checkoutController.statusZaloPayCheckout)
+
+
 
 
 
