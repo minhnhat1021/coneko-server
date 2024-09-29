@@ -11,6 +11,7 @@ const axios = require('axios').default
 const moment = require('moment')
 const { v1: uuidv1 } = require('uuid')
 const paypal = require('paypal-rest-sdk')
+const { errorMonitor } = require('events')
 
 // Cấu hình SDK với thông tin từ PayPal Developer
 paypal.configure({
@@ -115,7 +116,7 @@ class RoomsController {
                 "description": `Thanh toán bằng payPal`
             }],
             "redirect_urls": {
-                "return_url": `http://localhost:3000/payment-successful?paymentDetails=${paymentDetails}`,  // URL khi thanh toán thành công
+                "return_url": `http://localhost:3000/payment-successful?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
                 "cancel_url": "http://localhost:3000/payment-cancel"    // URL khi thanh toán bị hủy
             }
         }
@@ -141,8 +142,41 @@ class RoomsController {
     // confirm Paypal check out -------------------------------------------------------------------
 
     async confirmPayPalCheckout (req, res, next) {
+        try {
+            const { paymentId, payerId } = req.body
+    
+            if (!paymentId || !payerId) {
+                return res.status(400).json({ error: 'Thiếu thông tin paymentId hoặc payerId' })
+            }
+    
+            // Gọi PayPal API để xác nhận thanh toán
+            paypal.payment.execute(paymentId, { "payer_id": payerId }, async function (error, payment) {
+                if (error) {
+                    console.error('Lỗi xác nhận PayPal:', error.response ? error.response : error)
+                    return res.status(500).json({ error: 'Lỗi xác nhận thanh toán PayPal' })
+                } else {
+                    try {
+                        // Kiểm tra trạng thái thanh toán
+                        if (payment.state === 'approved') {
+                            return res.json({ data: { message: 'Thanh toán PayPal thành công', payment } })
+                        } else {
+                            return res.status(400).json({ data: { error: 'Thanh toán PayPal chưa hoàn tất' } })
+                        }
+                    } catch (err) {
+                        console.error('Lỗi khi lưu thông tin người dùng hoặc phòng:', err);
+                        return res.status(500).json({ data: { err: 'Lỗi khi lưu thông tin vào cơ sở dữ liệu' } })
+                    }
+                }
+            })
+    
+        } catch (err) {
+            console.error('Lỗi trong quá trình xác nhận thanh toán:', err)
+            next(err)
+        }
+    }
+    async savePayPalCheckout (req,res, next) {
+        try {
 
-        try{
             const { 
                 startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
                 amenitiesCharge, amenities,  totalPrice, roomId, userId, paymentId, payerId
@@ -189,39 +223,8 @@ class RoomsController {
                 checkInDate: startDate,
                 checkOutDate: endDate,
             })
+        } catch (err) {
 
-            // Gọi PayPal API để xác nhận thanh toán ----------------------------------------------------------------
-            const exchangeRate = 24605
-            const amountInUSD = (totalPrice / exchangeRate).toFixed(2)
-
-            const execute_payment_json = {
-                "payer_id": payerId,
-                "transactions": [{
-                    "amount": {
-                        "currency": "USD",
-                        "total": amountInUSD.toString() 
-                    }
-                }]
-            }
-            
-            paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
-                if (error) {
-                    console.error(error)
-                    res.status(500).json({ error: 'Lỗi xác nhận thanh toán payPal' })
-                } else {
-                    try {
-                        await user.save()
-                        await room.save()
-                        return res.json({ data: { message: 'Thanh toán PayPal thành công', payment } })
-
-                    } catch (saveError) {
-                        console.error('Lỗi khi lưu thông tin người dùng hoặc phòng:', saveError)
-                        return res.status(500).json({ error: 'Lỗi khi lưu thông tin vào cơ sở dữ liệu' })
-                    }
-                }
-            })
-        } catch(err) {
-            next(err)
         }
     }
 
@@ -260,7 +263,6 @@ class RoomsController {
                                 
             await vnPayPayment.save()
             const vnPayCheckoutId = vnPayPayment._id
-
             let vnp_Params = {}
             vnp_Params['vnp_Version'] = '2.1.0'
             vnp_Params['vnp_Command'] = 'pay'
@@ -274,7 +276,7 @@ class RoomsController {
             vnp_Params['vnp_ReturnUrl'] = `http://localhost:3000/payment-successful?vnPayCheckoutId=${vnPayCheckoutId}`
             vnp_Params['vnp_IpAddr'] = '127.0.0.1'
             vnp_Params['vnp_CreateDate'] = moment(new Date()).format('YYYYMMDDHHmmss')
-            // vnp_Params['vnp_BankCode'] = 'NCB'
+            vnp_Params['vnp_BankCode'] = 'NCB'
 
 
             vnp_Params = sortObject(vnp_Params)
@@ -296,15 +298,51 @@ class RoomsController {
     }
 
     async confirmVnPayCheckout (req, res, next) {
-        try {
+        let { vnp_Params } = req.body
 
-            let { vnPayCheckoutId, vnp_Params} = req.body
+        let secureHash = vnp_Params['vnp_SecureHash']
 
+        delete vnp_Params['vnp_SecureHash']
+        delete vnp_Params['vnPayCheckoutId']
+
+        function sortObject(obj) {
+            let sorted = {}
+            let str = []
+            let key
+            for (key in obj){
+                if (obj.hasOwnProperty(key)) {
+                str.push(encodeURIComponent(key))
+                }
+            }
+            str.sort()
+            for (key = 0; key < str.length; key++) {
+                sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+")
+            }
+            return sorted
+        }
+        vnp_Params = sortObject(vnp_Params)
+
+        let signData = querystring.stringify(vnp_Params, { encode: false })
+        let hmac = crypto.createHmac("sha512", process.env.VNPAY_SECRET)
+        let signed = hmac.update(signData).digest("hex")
+
+        if(secureHash === signed){
+            //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+            res.json({ data: {message: 'Xác nhận thanh toán vnPay thành công', code: vnp_Params['vnp_ResponseCode']} })
+        } else{
+            res.json({ data: {message: 'Thanh toán vnPay không thành công', code: '97'} })
+        }
+    }
+    
+    async saveVnPayCheckout (req, res, next) {
+        try{    
+            const { vnPayCheckoutId } = req.body
             const paymentDetails = await VnPayTransaction.findById(vnPayCheckoutId)
 
             if(!paymentDetails) {
                 return res.status(404).json( { data:{ msg: 'Thanh toán không tồn tại' } })
             }
+
 
             const {userId, roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice,
                 amenitiesCharge, amenities, amountSpent, bookingDate} = paymentDetails
@@ -314,7 +352,6 @@ class RoomsController {
             if (!user) {
                 return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
             }
-
             user.totalSpent += amountSpent
 
             // Thêm giao dịch vào lịch sử phòng đã đặt
@@ -326,10 +363,10 @@ class RoomsController {
             // Cập nhật phòng mà khách hàng đang có quyền sử dụng
             user.currentRooms.push({
                 roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent,bookingDate
+                amenitiesCharge, amenities, amountSpent, bookingDate
             })
 
-            
+            await user.save()
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
 
@@ -344,67 +381,17 @@ class RoomsController {
                 checkInDate,
                 checkOutDate,
             })
+            await room.save()
 
+            const vnPayDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
+            amenitiesCharge, amenities, totalPrice: amountSpent, roomId, userId}
 
-            // Xử lý so sánh chữ ký VnPay, nếu đúng thì mới lưu thông tin phòng --------------------------
-            let secureHash = vnp_Params['vnp_SecureHash']
-        
-            delete vnp_Params['vnp_SecureHash']
-            delete vnp_Params['vnPayCheckoutId']
-        
-            function sortObject(obj) {
-                let sorted = {}
-                let str = []
-                let key
-                for (key in obj){
-                    if (obj.hasOwnProperty(key)) {
-                    str.push(encodeURIComponent(key))
-                    }
-                }
-                str.sort()
-                for (key = 0; key < str.length; key++) {
-                    sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+")
-                }
-                return sorted
-            }
-            vnp_Params = sortObject(vnp_Params)
-        
-            let signData = querystring.stringify(vnp_Params, { encode: false })
-            let hmac = crypto.createHmac("sha512", process.env.VNPAY_SECRET)
-            let signed = hmac.update(signData).digest("hex") 
-        
-            if(secureHash === signed){
-                
-                await Promise.all([user.save(), room.save()])
-                return res.json({ data: { message: 'Thanh toán VnPay và lưu dữ liệu đặt phòng thành công', paymentDetails } })
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng vnPay thành công', vnPayDetails } })
 
-            } else{
-                return res.status(400).json({data: { msg: 'Chữ ký vnPay không đúng' } })
-            }
-
-        } catch (err) {
+        } catch(err) {
             next(err)
         }
-    }
-    async vnPayCheckoutDetails (req, res, next) {
-        try {
-
-            let { vnPayCheckoutId, vnp_Params} = req.body
-
-            const paymentDetails = await VnPayTransaction.findById(vnPayCheckoutId)
-
-            if(!paymentDetails) {
-                return res.status(404).json( { data:{ msg: 'Thanh toán không tồn tại' } })
-            }
-
-            const {userId, roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice,
-                amenitiesCharge, amenities, amountSpent, bookingDate} = paymentDetails
-
-            return res.json({ data: { message: 'Dữ liệu chi tiết khi đặt phòng thanh toán qua vnPay', paymentDetails } })
-
-        } catch (err) {
-            next(err)
-        }
+            
     }
 
 
@@ -439,7 +426,7 @@ class RoomsController {
             amount: totalPrice,
             description: `Thanh toán đặt phòng #${transID}`,
             bank_code: "",
-            callback_url: 'https://3cf9-2402-800-61ed-ab3e-2009-85a9-e669-e3f8.ngrok-free.app/api/room/checkout/zalopay/confirm'
+            callback_url: 'https://c8fa-2402-800-61ed-ab3e-2009-85a9-e669-e3f8.ngrok-free.app/api/room/checkout/zalopay/confirm'
             
         }
 
@@ -500,22 +487,20 @@ class RoomsController {
     async statusZaloPayCheckout(req, res, next) {
         const apptransid = req.params.apptransid
 
-        console.log(apptransid)
         const config = {
             app_id: "2553",
             key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
             key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
             endpoint: "https://sb-openapi.zalopay.vn/v2/query"
-        };
+        }
 
         let postData = {
             app_id: config.app_id,
             app_trans_id: apptransid, 
         }
 
-        let data = postData.app_id + "|" + postData.app_trans_id + "|" + config.key1;
+        let data = postData.app_id + "|" + postData.app_trans_id + "|" + config.key1
         postData.mac = CryptoJS.HmacSHA256(data, config.key1).toString()
-
 
         let postConfig = {
             method: 'post',
@@ -528,7 +513,6 @@ class RoomsController {
 
         try{
             const result = await axios(postConfig)
-            console.log(result)
             res.json({data: result.data})
         } catch(err){
             console.log(err)
@@ -537,6 +521,61 @@ class RoomsController {
     }
 
 
+    async saveZaloPayCheckout (req, res, next) {
+        try{    
+            const { zaloPayDetails } = req.body
+            
+            const { startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, totalPrice, roomId, userId  } = zaloPayDetails
+
+            // Handle model User ----------------------------------------------------------------
+            const user = await User.findById(userId)
+            if (!user) {
+                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
+            }
+            
+            user.totalSpent += totalPrice
+
+            const bookingDate = Date.now()
+            
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push({
+                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate
+            })
+
+            // Cập nhật phòng mà khách hàng đang có quyền sử dụng
+            user.currentRooms.push({
+                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate
+            })
+            console.log('booked:', {roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate})
+            await user.save()
+            // Handle model Room ----------------------------------------------------------------
+            const room = await Room.findById(roomId)
+
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            room.bookedUsers.push({
+                userId
+            })
+
+            // Cập nhật phòng đang có quyền sử dụng
+            room.currentUsers.push({
+                userId,
+                checkInDate: startDate,
+                checkOutDate: endDate,
+            })
+            await room.save()
+
+
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1} })
+
+        } catch(err) {
+            next(err)
+        }
+            
+    }
 }
 
 module.exports = new RoomsController
