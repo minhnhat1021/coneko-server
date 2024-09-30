@@ -13,6 +13,8 @@ const { v1: uuidv1 } = require('uuid')
 const paypal = require('paypal-rest-sdk')
 const { errorMonitor } = require('events')
 
+
+const cron = require('node-cron')
 // Cấu hình SDK với thông tin từ PayPal Developer
 paypal.configure({
     'mode': 'sandbox', // Hoặc 'live' nếu là môi trường thực
@@ -20,9 +22,31 @@ paypal.configure({
     'client_secret': 'ECjuH6I43Pg-RjEKcIPj0kbLMr6qsE1joJQvrGsWdNmPrk56g4NiVs1BNK-E9Q8stVaBHlqdEqEmuAwa'
 })
 
+
+cron.schedule('0 0 * * *', async () => {
+    const users = await User.find()
+
+    const currentTime = new Date()
+    
+    for (const user of users) {
+        // Lọc currentRooms từ bookedRooms
+        const currentRooms = user.bookedRooms.filter(booking => {
+            return booking.checkInDate >= currentTime
+        })
+
+        // Cập nhật currentRooms
+        user.currentRooms = currentRooms
+
+        // Lưu lại thông tin của user
+        await user.save();
+    }
+
+    console.log("đã update currentRooms cho tất cả user");
+})
+
 class RoomsController {
 
-    // Coneko check out -------------------------------------------------------------------
+
     async conekoCheckout(req, res, next) {
         try{
             let { 
@@ -139,8 +163,6 @@ class RoomsController {
         })
     }
 
-    // confirm Paypal check out -------------------------------------------------------------------
-
     async confirmPayPalCheckout (req, res, next) {
         try {
             const { paymentId, payerId } = req.body
@@ -176,11 +198,10 @@ class RoomsController {
     }
     async savePayPalCheckout (req,res, next) {
         try {
-
             const { 
                 startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
                 amenitiesCharge, amenities,  totalPrice, roomId, userId, paymentId, payerId
-            } = req.body
+            } = req.body.payPalDetails
             
             // Lưu thông tin đặt phòng vào user và room
             const user = await User.findById(userId)
@@ -209,6 +230,8 @@ class RoomsController {
                 bookingDate
             })
 
+            await user.save()
+
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
 
@@ -223,11 +246,15 @@ class RoomsController {
                 checkInDate: startDate,
                 checkOutDate: endDate,
             })
+
+            await room.save()
+            
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng payPay thành công', return_code: 1} })
+
         } catch (err) {
 
         }
     }
-
 
     // vnPay check out -------------------------------------------------------------------
     async vnPayCheckout(req, res, next) {
@@ -393,7 +420,6 @@ class RoomsController {
         }
             
     }
-
 
     // vnPay check out -------------------------------------------------------------------
     async zaloPayCheckout(req, res, next) {
@@ -567,7 +593,6 @@ class RoomsController {
                 checkOutDate: endDate,
             })
             await room.save()
-
 
             res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1} })
 
