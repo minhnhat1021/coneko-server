@@ -31,7 +31,7 @@ cron.schedule('0 0 * * *', async () => {
     for (const user of users) {
         // Lọc currentRooms từ bookedRooms
         const currentRooms = user.bookedRooms.filter(booking => {
-            return booking.checkInDate >= currentTime
+            return booking.checkOutDate >= currentTime
         })
 
         // Cập nhật currentRooms
@@ -140,7 +140,7 @@ class RoomsController {
                 "description": `Thanh toán bằng payPal`
             }],
             "redirect_urls": {
-                "return_url": `http://localhost:3000/payment-successful?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
+                "return_url": `http://localhost:3000/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
                 "cancel_url": "http://localhost:3000/payment-cancel"    // URL khi thanh toán bị hủy
             }
         }
@@ -300,7 +300,7 @@ class RoomsController {
             vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId
             vnp_Params['vnp_OrderType'] = 'other'
             vnp_Params['vnp_Amount'] = totalPrice * 100
-            vnp_Params['vnp_ReturnUrl'] = `http://localhost:3000/payment-successful?vnPayCheckoutId=${vnPayCheckoutId}`
+            vnp_Params['vnp_ReturnUrl'] = `http://localhost:3000/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
             vnp_Params['vnp_IpAddr'] = '127.0.0.1'
             vnp_Params['vnp_CreateDate'] = moment(new Date()).format('YYYYMMDDHHmmss')
             vnp_Params['vnp_BankCode'] = 'NCB'
@@ -438,7 +438,7 @@ class RoomsController {
         }
 
         const embed_data = {
-            redirecturl: `http://localhost:3000/payment-successful?zalopayDetails=${paymentDetails}`,
+            redirecturl: `http://localhost:3000/payment-verification?zalopayDetails=${paymentDetails}`,
         }
         const items = [{}]
         const transID = Math.floor(Math.random() * 1000000);

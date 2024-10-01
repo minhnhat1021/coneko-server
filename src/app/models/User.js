@@ -16,7 +16,7 @@ const User = new Schema({
     displayName: {type: String, default: ''},
     avatar: {type: String, default: ''},
     accountBalance: {type: Number, default: 100000000},
-    totalSpent: {type: String, default: ''},
+    totalSpent: {type: Number, default: 0},
     favoriteRooms: [],
     bookedRooms: [
         {
