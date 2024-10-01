@@ -282,7 +282,7 @@ class RoomsController {
             }
 
             let orderId = moment(new Date()).format('DDHHmmss')
-            let vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
+            let vnpUrl = process.env.VNPAY_ENDPOINT
 
             const bookingDate = Date.now()
             const vnPayPayment = new VnPayTransaction({orderId, userId, roomId, checkInDate: startDate, checkOutDate: endDate, days,
@@ -431,10 +431,10 @@ class RoomsController {
         const paymentDetails = encodeURIComponent(JSON.stringify(req.body))
         // APP INFO
         const config = {
-            app_id: "2553",
-            key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
-            key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
-            endpoint: "https://sb-openapi.zalopay.vn/v2/create"
+            app_id: process.env.ZALOPAY_APP_ID,
+            key1: process.env.ZALOPAY_KEY_1,
+            key2: process.env.ZALOPAY_KEY_2,
+            endpoint: process.env.ZALOPAY_ENDPOINT,
         }
 
         const embed_data = {
@@ -475,7 +475,7 @@ class RoomsController {
 
     async confirmZaloPayCheckout(req, res, next) {
         const config = {
-            key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz"
+            key2: process.env.ZALOPAY_KEY_2
         }
 
         let result = {}
@@ -514,9 +514,9 @@ class RoomsController {
         const apptransid = req.params.apptransid
 
         const config = {
-            app_id: "2553",
-            key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
-            key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
+            app_id: process.env.ZALOPAY_APP_ID,
+            key1: process.env.ZALOPAY_KEY_1,
+            key2: process.env.ZALOPAY_KEY_2,
             endpoint: "https://sb-openapi.zalopay.vn/v2/query"
         }
 
@@ -545,7 +545,6 @@ class RoomsController {
         }
             
     }
-
 
     async saveZaloPayCheckout (req, res, next) {
         try{    
