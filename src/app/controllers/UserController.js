@@ -18,20 +18,26 @@ class UserController {
         res.json(req.user)
     }
 
-    // [Get] /user/account
+    // [Get] /user/purchase
     purchase(req, res, next) {
         res.json(req.user)
     }
 
-    // [Get] /user/account
+    // [Get] /user/booking-history
     bookingHistory(req, res, next) {
         res.json(req.user)
     }
     
-    // [Get] /user/account
+    // [Get] /user/favorite-rooms
     favoriteRooms(req, res, next) {
         res.json(req.user)
     }
+
+    // [Get] /user/current-rooms
+    currentRooms(req, res, next) {
+        res.json(req.user)
+    }
+
     paycard(req, res, next) {
         res.json(req.user)
     }
