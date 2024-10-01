@@ -31,6 +31,7 @@ const User = new Schema({
             amenities: {type: Object}, 
             bookingDate: { type: Date },
             amountSpent: { type: Number },
+            qrCode: { type: String },
             _id: false
         }
     ],

@@ -2,16 +2,16 @@ const Room = require('../models/Room')
 const User = require('../models/User')
 const VnPayTransaction = require('../models/VnPayTransaction')
 
+const axios = require('axios').default
+
 var querystring = require('qs')
 const crypto = require('crypto')
 const CryptoJS = require('crypto-js')
-
-const axios = require('axios').default
-
 const moment = require('moment')
-const { v1: uuidv1 } = require('uuid')
+const QRCode = require('qrcode')
+
+
 const paypal = require('paypal-rest-sdk')
-const { errorMonitor } = require('events')
 
 
 const cron = require('node-cron')
@@ -214,21 +214,30 @@ class RoomsController {
             const bookingDate = Date.now()
             // Handle model User ----------------------------------------------------------------
 
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days,
-                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+            const newBooking = {
+                roomId, 
+                checkInDate: startDate, 
+                checkOutDate: endDate, 
+                days,
+                roomPrice, 
+                roomCharge, 
+                amenitiesPrice, 
+                amenitiesCharge, 
+                amenities, 
                 amountSpent: totalPrice,
                 bookingDate
-            })
+            }
+            
+            // Thông tin cần được mã hóa vào mã QR
+            const qrData = newBooking
 
-            // Cập nhật phòng mà khách hàng đang có quyền sử dụng
-            user.currentRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days,
-                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-                amountSpent: totalPrice,
-                bookingDate
-            })
+            // Tạo mã QR
+            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
+
+            newBooking.qrCode = qrCode
+            
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push(newBooking)
 
             await user.save()
 
@@ -248,11 +257,18 @@ class RoomsController {
             })
 
             await room.save()
-            
-            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng payPay thành công', return_code: 1} })
+            // Trả về QR code cùng với các thông tin khác nếu cần
+            res.json({ 
+                data: {
+                    message: 'Lưu dữ liệu thanh toán phòng thành công',
+                    return_code: 1,
+                    qrCode,  
+                }
+            })
 
         } catch (err) {
-
+            console.error('Lỗi khi lưu thông tin hoặc tạo QR:', err)
+            return res.status(500).json({ error: 'Lỗi khi lưu thông tin hoặc tạo mã QR' })
         }
     }
 
