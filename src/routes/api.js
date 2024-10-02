@@ -1,17 +1,17 @@
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
-const loginRouter = require('./login');
-const registerRouter = require('./register');
+const loginRouter = require('./login')
+const registerRouter = require('./register')
 
-const userRouter = require('./user');
-const usersRouter = require('./users');
+const userRouter = require('./user')
+const usersRouter = require('./users')
 
-const roomsRouter = require('./rooms');
-const roomRouter = require('./room');
+const roomsRouter = require('./rooms')
+const roomRouter = require('./room')
 
 
-const aboutRouter = require('./about');
+const aboutRouter = require('./about')
 const adminRouter = require('./admin')
 
 

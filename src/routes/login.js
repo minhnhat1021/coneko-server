@@ -8,6 +8,8 @@ const loginController = require('../app/controllers/LoginController')
 router.get('/infoLogin', loginController.getLoginActive)
 router.post('/out', loginController.logout)
 
+router.post('/google', loginController.googleLogin)
+
 router.post('/', loginController.login)
 
 
