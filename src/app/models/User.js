@@ -54,6 +54,10 @@ const User = new Schema({
     role: {type: String, default: ''},
     isActive: {type: String, default: ''},
     verifyToken: {type: String, default: ''},
+    googleId: {type: String, default: ''},
+    avatarGoogleUrl: {type: String, default: ''},
+    facebookId: {type: String, default: ''},
+    avatarFacebookUrl: {type: String, default: ''},
 
 }, {
     timestamps: true // tạo dữ liệu về thời gian tạo và xóa User

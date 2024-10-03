@@ -9,6 +9,7 @@ router.get('/infoLogin', loginController.getLoginActive)
 router.post('/out', loginController.logout)
 
 router.post('/google', loginController.googleLogin)
+router.post('/facebook', loginController.facebookLogin)
 
 router.post('/', loginController.login)
 
