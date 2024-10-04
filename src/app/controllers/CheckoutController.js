@@ -1,5 +1,6 @@
 const Room = require('../models/Room')
 const User = require('../models/User')
+const Booking = require('../models/Booking')
 const VnPayTransaction = require('../models/VnPayTransaction')
 
 const axios = require('axios').default
@@ -215,6 +216,7 @@ class RoomsController {
             // Handle model User ----------------------------------------------------------------
 
             const newBooking = {
+                userId,
                 roomId, 
                 checkInDate: startDate, 
                 checkOutDate: endDate, 
@@ -227,19 +229,6 @@ class RoomsController {
                 amountSpent: totalPrice,
                 bookingDate
             }
-            
-            // Thông tin cần được mã hóa vào mã QR
-            const qrData = newBooking
-
-            // Tạo mã QR
-            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
-
-            newBooking.qrCode = qrCode
-            
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push(newBooking)
-
-            await user.save()
 
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
@@ -256,7 +245,26 @@ class RoomsController {
                 checkOutDate: endDate,
             })
 
+            
+            // Lưu dữ liệu vào trong data booking
+            const bookingDetails = await Booking.create({...newBooking, user, room})
+
+            // Thông tin cần được mã hóa vào mã QR
+            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
+
+            // Tạo mã QR
+            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
+
+            newBooking.qrCode = qrCode
+            
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push(newBooking)
+            bookingDetails.qrCode = qrCode
+
+            await user.save()
             await room.save()
+            await bookingDetails.save()
+
             // Trả về QR code cùng với các thông tin khác nếu cần
             res.json({ 
                 data: {
@@ -397,19 +405,8 @@ class RoomsController {
             }
             user.totalSpent += amountSpent
 
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push({
-                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent, bookingDate
-            })
+            
 
-            // Cập nhật phòng mà khách hàng đang có quyền sử dụng
-            user.currentRooms.push({
-                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent, bookingDate
-            })
-
-            await user.save()
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
 
@@ -424,10 +421,45 @@ class RoomsController {
                 checkInDate,
                 checkOutDate,
             })
-            await room.save()
-
+            
             const vnPayDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-            amenitiesCharge, amenities, totalPrice: amountSpent, roomId, userId}
+            amenitiesCharge, amenities, totalPrice: amountSpent, roomId, userId, bookingDate}
+            
+            // Lưu dữ liệu vào trong data booking
+            const bookingDetails = await Booking.create({
+                checkInDate,
+                checkOutDate, 
+                days, 
+                roomPrice, 
+                roomCharge, 
+                amenitiesPrice, 
+                amenitiesCharge, 
+                amenities,
+                amountSpent,
+                roomId, 
+                userId, 
+                bookingDate,
+                user, 
+                room
+            })
+
+            // Thông tin cần được mã hóa vào mã QR
+            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
+
+            // Tạo mã QR
+            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
+            
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push({
+                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent, bookingDate, qrCode
+            })
+
+            bookingDetails.qrCode = qrCode
+
+            await user.save()
+            await room.save()
+            await bookingDetails.save()
 
             res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng vnPay thành công', vnPayDetails } })
 
@@ -578,21 +610,7 @@ class RoomsController {
             user.totalSpent += totalPrice
 
             const bookingDate = Date.now()
-            
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate
-            })
 
-            // Cập nhật phòng mà khách hàng đang có quyền sử dụng
-            user.currentRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate
-            })
-            console.log('booked:', {roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate})
-            await user.save()
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
 
@@ -607,7 +625,42 @@ class RoomsController {
                 checkInDate: startDate,
                 checkOutDate: endDate,
             })
+
+            // Lưu dữ liệu vào trong data booking
+            const bookingDetails = await Booking.create({
+                checkInDate: startDate,
+                checkOutDate : endDate, 
+                days, 
+                roomPrice, 
+                roomCharge, 
+                amenitiesPrice, 
+                amenitiesCharge, 
+                amenities,
+                amountSpent: totalPrice,
+                roomId, 
+                userId, 
+                bookingDate,
+                user, 
+                room
+            })
+
+            // Thông tin cần được mã hóa vào mã QR
+            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
+
+            // Tạo mã QR
+            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
+            
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push({
+                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate, qrCode
+            })
+
+            bookingDetails.qrCode = qrCode
+
+            await user.save()
             await room.save()
+            await bookingDetails.save()
 
             res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1} })
 

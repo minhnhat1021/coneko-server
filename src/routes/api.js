@@ -31,10 +31,5 @@ const adminRouter = require('./admin')
     router.use('/about', aboutRouter)
     router.use('/admin', adminRouter)
 
-    
-
-
-
-
 
 module.exports = router 

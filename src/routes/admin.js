@@ -9,8 +9,6 @@ const uploadMiddleware = require ('../app/middlewares/uploadMiddleware')
 const adminController = require('../app/controllers/AdminController')
 
 
-
-
 router.get('/user',  adminController.User)
 router.get('/user-list',  adminController.userList)
 
@@ -36,5 +34,6 @@ router.delete('/:id/room-delete',  adminController.deleteRoom)
 router.delete('/:id/room-force',  adminController.forceDeleteRoom)
 router.patch('/:id/room-restore',  adminController.restoreRoom)
 
-
+// Booking management
+router.get('/booking-management',  adminController.bookingManagement)
 module.exports = router 

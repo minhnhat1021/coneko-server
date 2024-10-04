@@ -1,5 +1,6 @@
 const Room = require('../models/Room')
 const User = require('../models/User')
+const Booking = require('../models/Booking')
 
 class AdminController {
 
@@ -189,9 +190,20 @@ class AdminController {
             .catch(next)
     }
 
+    // Booking management ----------------------------------------------
+
+    // [GET] admin/booking-management
+    async bookingManagement(req, res, next) {
+        const bookings  = await Booking.find({})
+
+        res.json({ data: {msg: 'Toàn bộ dữ liệu về những lần đặt phòng của khách hàng', bookings } })
+    }
+
+    // [GET] admin/booking-management/details/:id
+    bookingDetails(req, res, next) {
+        
+    }
     
-
-
 }
 
 module.exports = new AdminController
