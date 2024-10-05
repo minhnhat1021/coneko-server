@@ -11,20 +11,18 @@ const CryptoJS = require('crypto-js')
 const moment = require('moment')
 const QRCode = require('qrcode')
 
-
 const paypal = require('paypal-rest-sdk')
 
-
 const cron = require('node-cron')
+
 // Cấu hình SDK với thông tin từ PayPal Developer
 paypal.configure({
-    'mode': 'sandbox', // Hoặc 'live' nếu là môi trường thực
+    'mode': 'sandbox', 
     'client_id': 'AR2QfHBja3liPa_Zb9sJkXudCPKwol1aDbsjYUv9z8XbBI-qypxcnGlxaJSTkyhG8guSTvY7y3t_6Zgb',
     'client_secret': 'ECjuH6I43Pg-RjEKcIPj0kbLMr6qsE1joJQvrGsWdNmPrk56g4NiVs1BNK-E9Q8stVaBHlqdEqEmuAwa'
 })
 
-
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('01 10 * * *', async () => {
     const users = await User.find()
 
     const currentTime = new Date()
@@ -39,12 +37,25 @@ cron.schedule('0 0 * * *', async () => {
         user.currentRooms = currentRooms
 
         // Lưu lại thông tin của user
-        await user.save();
+        await user.save()
     }
 
-    console.log("đã update currentRooms cho tất cả user");
+    console.log("đã update currentRooms cho tất cả user")
 })
-
+const handleLevel = (totalSpent) => {
+    if (totalSpent >= 100000000) {
+        return 'vip'
+    } else if (totalSpent >= 80000000) {
+        return 'diamond'
+    } else if (totalSpent >= 50000000) {
+        return 'platinum'
+    } else if (totalSpent >= 30000000) {
+        return 'gold'
+    } else if (totalSpent >= 20000000) {
+        return 'silver'
+    }
+    return 'normal'
+}
 class RoomsController {
 
 
@@ -70,27 +81,26 @@ class RoomsController {
             user.accountBalance = newAccountBalance
             user.totalSpent += totalPrice
 
+            user.level = await handleLevel(user.totalSpent)
+
+            
             const bookingDate = Date.now()
             // Handle model User ----------------------------------------------------------------
-
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days,
-                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+            
+            const newBooking = {
+                userId,
+                roomId, 
+                checkInDate: startDate, 
+                checkOutDate: endDate, 
+                days,
+                roomPrice, 
+                roomCharge, 
+                amenitiesPrice, 
+                amenitiesCharge, 
+                amenities, 
                 amountSpent: totalPrice,
                 bookingDate
-
-            })
-
-            // Cập nhật phòng mà khách hàng đang có quyền sử dụng
-            user.currentRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days,
-                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-                amountSpent: totalPrice,
-                bookingDate
-            })
-            await user.save()
-
+            }
 
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
@@ -100,15 +110,25 @@ class RoomsController {
                 userId
             })
 
-            // Cập nhật phòng đang có quyền sử dụng
-            room.currentUsers.push({
-                userId,
-                checkInDate: startDate,
-                checkOutDate: endDate,
-            })
-            await room.save()
+            // Lưu dữ liệu vào trong data booking
+            const bookingDetails = await Booking.create({...newBooking, user, room})
 
-            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room } })
+            // Thông tin cần được mã hóa vào mã QR
+            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
+
+            // Tạo mã QR
+            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
+
+            newBooking.qrCode = qrCode
+            
+            // Thêm giao dịch vào lịch sử phòng đã đặt
+            user.bookedRooms.push(newBooking)
+            bookingDetails.qrCode = qrCode
+
+            await user.save()
+            await room.save()
+            await bookingDetails.save()
+            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room, qrCode  } })
 
         } catch(err) {
             next(err)
@@ -211,6 +231,8 @@ class RoomsController {
             }
 
             user.totalSpent += totalPrice
+
+            user.level = await handleLevel(user.totalSpent)
 
             const bookingDate = Date.now()
             // Handle model User ----------------------------------------------------------------
@@ -403,9 +425,9 @@ class RoomsController {
             if (!user) {
                 return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
             }
-            user.totalSpent += amountSpent
 
-            
+            user.totalSpent += amountSpent
+            user.level = await handleLevel(user.totalSpent)
 
             // Handle model Room ----------------------------------------------------------------
             const room = await Room.findById(roomId)
@@ -608,6 +630,7 @@ class RoomsController {
             }
             
             user.totalSpent += totalPrice
+            user.level = await handleLevel(user.totalSpent)
 
             const bookingDate = Date.now()
 
