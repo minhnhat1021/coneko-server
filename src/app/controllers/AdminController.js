@@ -22,38 +22,29 @@ class AdminController {
         }
     }
 
-    // [Get] /admin/user-list
-
-    userList(req, res, next) {
-        User.find({})
-           .then(users => res.json(users))
-           .catch(next)
-    }
-
     // [Get] /admin/id/user-ban
     userBan(req, res, next) {
-        User.delete({ _id: req.body.id})
-            .then(() => res.json('Ban user thành công'))
+        User.delete({ _id: req.body.userId})
+            .then(() => res.json({ data: {msg: 'Ban user thành công'} }))
             .catch(next)
     }
-
 
     // [Get] /admin/user-ban
     bannedUsers(req, res, next) {
         User.findWithDeleted({ deleted: true})
-           .then(rooms => res.json(rooms))
+           .then(users => res.json({ data: users }))
            .catch(next)
     }
     
     restoreUser(req, res, next) {
-        User.restore({ _id: req.params.id})
-            .then(() => res.json('Khôi phục user thành công'))
+        User.restore({ _id: req.body.userId})
+            .then(() => res.json({ data: {msg: 'Khôi phục user thành công'} }))
             .catch(next)
     }
 
     forceDeleteUser(req, res, next) {
-        User.deleteOne({ _id: req.params.id})
-            .then(() => res.json('Xóa vĩnh viễn user thành công'))
+        User.deleteOne({ _id: req.body.userId})
+            .then(() => res.json({data: {msg: 'Xóa vĩnh viễn user thành công'} }))
             .catch(next)
     }
 
@@ -75,7 +66,7 @@ class AdminController {
         }
     }
 
-    // [Get] /admin/statisticsRoom
+    // [Get] /admin/statisticsRoom  StatisticsRoom-------------------------------------------------
     async statisticsRoom(req, res, next) {
         try {
             const available = await Room.countDocuments({ status: 'available' })
@@ -122,33 +113,25 @@ class AdminController {
         }
     }
 
-
     // Room List -----------------------------------------------------------------------------------------
-    // [Get] /admin/create-room
-    showRoom(req, res, next) {
-        Room.find({})
-           .then(rooms => res.json(rooms))
-           .catch(next)
-    }
     
     editRoom(req, res, next) {
         Room.findById(req.params.id)
-            .then(room => res.json(room))
+            .then(room => res.json({ data: room }))
             .catch(next)
     }
     updateRoom(req, res, next) {
-        Room.updateOne({ _id: req.params.id}, req.body)
-            .then(() => res.json('Update room thành công'))
+        Room.updateOne({ _id: req.body.roomId}, req.body)
+            .then(() => res.json({ data: {msg: 'Update room thành công'} }))
             .catch(next)
     }
 
     // [DELETE soft] /admin/delete-room
     deleteRoom(req, res, next) {
         Room.delete({ _id: req.body.id})
-            .then(() => res.json('Delete room thành công'))
+            .then(() => res.json({ data: {msg: 'Delete room thành công'} }))
             .catch(next)
     }
-
 
     // Room Create -----------------------------------------------------------------------------------------
 
@@ -157,8 +140,7 @@ class AdminController {
         const newRoom = new Room(req.body)
 
         newRoom.save()
-            .then(() => res.json(req.body))
-            .then(() => res.json({msg: 'Thêm phòng thành công'}))
+            .then(() => res.json({ data: {msg: 'Thêm phòng thành công'} }))
             .catch(next)
     }
 
@@ -166,27 +148,27 @@ class AdminController {
     uploadRoom(req, res, next) {
         console.log(req.file)
 
-        res.json(req.file)
+        res.json({ data: req.file })
 
     }
 
     // Room Trash -----------------------------------------------------------------------------------------
     
-    roomTrash(req, res, next) {
+    trashRooms(req, res, next) {
         Room.findWithDeleted({ deleted: true})
-           .then(rooms => res.json(rooms))
+           .then(rooms => res.json({ data: rooms }))
            .catch(next)
     }
 
     restoreRoom(req, res, next) {
-        Room.restore({ _id: req.params.id})
-            .then(() => res.json('Khôi phục room thành công'))
+        Room.restore({ _id: req.body.roomId})
+            .then(() => res.json({ data: {msg: 'Khôi phục room thành công'} }))
             .catch(next)
     }
 
     forceDeleteRoom(req, res, next) {
-        Room.deleteOne({ _id: req.params.id})
-            .then(() => res.json('Xóa vĩnh viễn room thành công'))
+        Room.deleteOne({ _id: req.body.roomId})
+            .then(() => res.json({data: {msg: 'Xóa vĩnh viễn room thành công'} }))
             .catch(next)
     }
 

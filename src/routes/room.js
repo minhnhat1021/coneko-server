@@ -13,7 +13,7 @@ router.use('/checkout', checkoutRouter)
 
 // Room controller
 router.get('/:name/room-detail', roomController.roomDetail)
-router.get('/:id', roomController.findRoomById)
+router.post('/detail/id', roomController.findRoomById)
 
 
 module.exports = router 

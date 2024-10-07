@@ -2,6 +2,16 @@ const User = require('../models/User')
 
 
 class UsersController {
+    
+    // [Get] /users
+    userList(req, res, next) {
+        
+        User.find({}) 
+            .then(users => 
+                res.json({ data: { users } })
+            )    
+            .catch(err => next(err))      
+    }
 
     // [Get] /users/search?q=
     findUser(req, res) {

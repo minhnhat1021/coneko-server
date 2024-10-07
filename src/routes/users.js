@@ -8,5 +8,6 @@ const usersController = require('../app/controllers/UsersController')
 
 // user controller
 router.get('/search', usersController.findUser)
+router.get('/', usersController.userList)
 
 module.exports = router 

@@ -13,8 +13,9 @@ class RoomsController {
 
     // [Get] /room/:id
     findRoomById(req, res, next) {
-        Room.findById(req.params.id)
-            .then(data => res.json(data) )
+        const { roomId } = req.body
+        Room.findById(roomId )
+            .then(room => res.json({ data: room } ) )
             .catch(err => next(err))
     }
 

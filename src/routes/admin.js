@@ -10,29 +10,26 @@ const adminController = require('../app/controllers/AdminController')
 
 
 router.get('/user',  adminController.User)
-router.get('/user-list',  adminController.userList)
-
 
 router.get('/banned-users',  adminController.bannedUsers)
 
-router.delete('/:id/user-ban',  adminController.userBan)
-router.delete('/:id/user-force',  adminController.forceDeleteUser)
-router.patch('/:id/user-restore',  adminController.restoreUser)
+router.delete('/user-ban',  adminController.userBan)
+router.delete('/user-force',  adminController.forceDeleteUser)
+router.patch('/user-restore',  adminController.restoreUser)
 
 // Room controller
 
 router.get('/room',  adminController.Room)
 router.get('/statistics-room',  adminController.statisticsRoom)
-router.get('/room-list',  adminController.showRoom)
-router.get('/room-trash',  adminController.roomTrash)
+router.get('/trash-rooms',  adminController.trashRooms)
 
 router.post('/upload', uploadMiddleware,  adminController.uploadRoom)
 router.post('/create-room',  adminController.createRoom)
 router.get('/:id/room-edit',  adminController.editRoom)
-router.put('/:id/room-update',  adminController.updateRoom)
-router.delete('/:id/room-delete',  adminController.deleteRoom)
-router.delete('/:id/room-force',  adminController.forceDeleteRoom)
-router.patch('/:id/room-restore',  adminController.restoreRoom)
+router.put('/room-update',  adminController.updateRoom)
+router.delete('/room-delete',  adminController.deleteRoom)
+router.delete('/room-force',  adminController.forceDeleteRoom)
+router.patch('/room-restore',  adminController.restoreRoom)
 
 // Booking management
 router.get('/booking-management',  adminController.bookingManagement)
