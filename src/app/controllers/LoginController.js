@@ -30,25 +30,24 @@ class LoginController {
                                 verifyToken: token
                             })
                                 .then(() => {
-                                    return res.status(200).json({ message: 'Đăng nhập thành công', token, userId: user._id})
+                                    return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token, userId: user._id} })
                                 })
                         } else {
-                            return res.json({ msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác' });
+                            return res.json({ data: {msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'} });
                         }
                         
                     })   
                 }else {
-                    res.json({msg: 'Tài khoản này chưa được đăng ký'})
+                    res.json({ data: {msg: 'Tài khoản này chưa được đăng ký'} })
                 }
             })      
     }
     //[POST] /login/out
     logout(req, res, next) {
-        User.updateOne({_id: req.body.id}, {
+        User.updateOne({_id: req.body.userId}, {
             verifyToken: ''
         })
-            
-            .then(() => res.json({message: 'Đã hết phiên đăng nhập'}))
+            .then(() => res.json({data: {msg: 'Đã hết phiên đăng nhập'} }))
     }
     async googleLogin(req, res, next) {
         const { credential } = req.body

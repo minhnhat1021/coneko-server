@@ -11,14 +11,9 @@ class AdminController {
             const userList = await User.countDocuments({ })
             const bannedUsers = await User.countDocumentsWithDeleted({ deleted: true })
     
-            res.status(200).json({
-                data: {
-                    userList,
-                    bannedUsers
-                }  
-            })
+            res.status(200).json({ data: {userList,bannedUsers} })
         } catch (error) {
-            res.status(500).json({ message: 'lỗi truy xuất dữ liệu Room' })
+            res.status(500).json({data: {msg: 'lỗi truy xuất dữ liệu Room'} })
         }
     }
 
@@ -55,14 +50,9 @@ class AdminController {
             const roomList = await Room.countDocuments({ })
             const roomTrash = await Room.countDocumentsWithDeleted({ deleted: true })
     
-            res.status(200).json({
-                data: {
-                    roomList,
-                    roomTrash,
-                }  
-            })
+            res.status(200).json({ data: {roomList, roomTrash} })
         } catch (error) {
-            res.status(500).json({ msg: 'lỗi truy xuất dữ liệu Room' })
+            res.status(500).json({ data: {msg: 'lỗi truy xuất dữ liệu Room'} })
         }
     }
 

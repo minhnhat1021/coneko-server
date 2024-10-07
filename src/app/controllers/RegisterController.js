@@ -17,7 +17,7 @@ class RegisterController {
         User.findOne({email: req.body.email}) 
             .then((user) => {
                 if(user) {
-                    res.json({ msg: 'Email đã tồn tại '})
+                    res.json({ data: {msg: 'Email đã tồn tại '} })
                 }else {
                     const {fullName, email, password} = req.body
                     const displayName = fullName
@@ -45,7 +45,7 @@ class RegisterController {
                                     verifyToken: token
                                 })
 
-                                res.status(200).json({ message: 'Đăng ký thành công', token, userId: userRegister._id })
+                                res.status(200).json({ data: {msg: 'Đăng ký thành công', token, userId: userRegister._id } })
                             })
                             .catch(next)
                     })

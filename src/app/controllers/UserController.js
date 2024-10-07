@@ -10,7 +10,7 @@ class UserController {
     }
     // [Get] /user/account
     show(req, res, next) {
-        res.json(req.user)
+        res.json( req.user )
     }
 
     // [Get] /user/account
@@ -41,7 +41,6 @@ class UserController {
     paycard(req, res, next) {
         res.json(req.user)
     }
-
 
     // [Patch] /favorite-rooms/add
 
