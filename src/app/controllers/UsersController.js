@@ -58,10 +58,10 @@ class UsersController {
             }
             console.log(filterCriteria)
             const users = await User.find(filterCriteria)
-            res.status(200).json({ data: {msg: 'Danh sách phòng sau khi lọc', users} })
+            res.status(200).json({ data: {msg: 'Danh sách user sau khi lọc', users} })
 
         } catch (error) {
-            res.status(500).json({ data: {msg: 'Lỗi lọc phòng bằng options'} })
+            res.status(500).json({ data: {msg: 'Lỗi lọc user bằng options'} })
         }
         
     }

@@ -11,6 +11,8 @@ const adminController = require('../app/controllers/AdminController')
 
 router.get('/user',  adminController.User)
 
+router.post('/login',  adminController.adminLogin)
+
 router.get('/banned-users',  adminController.bannedUsers)
 
 router.delete('/user-ban',  adminController.userBan)
@@ -33,4 +35,5 @@ router.patch('/room-restore',  adminController.restoreRoom)
 
 // Booking management
 router.get('/booking-management',  adminController.bookingManagement)
+router.post('/booking/filter-options',  adminController.filterBookingByOptions)
 module.exports = router 

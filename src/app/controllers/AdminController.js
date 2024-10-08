@@ -1,10 +1,44 @@
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
 const Room = require('../models/Room')
 const User = require('../models/User')
 const Booking = require('../models/Booking')
+const Admin = require('../models/Admin')
 
 class AdminController {
 
 
+    adminLogin(req, res, next) {
+
+        const {userName, password} = req.body
+        console.log(userName, password)
+        Admin.findOne({userName: userName}) 
+            .then((admin) => {
+                if(admin) {
+                    console.log(admin)
+                    bcrypt.compare(password, admin.password, (err, isMatch) => {
+                        if (isMatch) {
+                            //1 tao json webtoken        
+                            
+                            const token = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
+                
+                            Admin.updateOne({ _id: admin._id }, {
+                                verifyToken: token
+                            })
+                                .then(() => {
+                                    return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token, adminId: admin._id} })
+                                })
+                        } else {
+                            return res.json({ data: {msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'} });
+                        }
+                        
+                    })   
+                }else {
+                    res.json({ data: {msg: 'Tài khoản này chưa được đăng ký'} })
+                }
+            })     
+    }
     // [Get] /admin/user
     async User(req, res, next) {
         try {
@@ -171,8 +205,41 @@ class AdminController {
         res.json({ data: {msg: 'Toàn bộ dữ liệu về những lần đặt phòng của khách hàng', bookings } })
     }
 
-    // [GET] admin/booking-management/details/:id
-    bookingDetails(req, res, next) {
+    // [Post] /booking/filter-options
+    
+    async filterBookingByOptions(req, res, next) {
+        try {
+            const { options } = req.body
+            let filterCriteria = {}
+    
+            const level = []
+            if (options.includes('silver')) {
+                level.push({ amountSpent: { $lte: 20000000 } })
+            }
+            if (options.includes('gold')) {
+                level.push({ amountSpent: { $gt: 20000000, $lt: 50000000 } })
+            }
+            if (options.includes('platinum')) {
+                level.push({ amountSpent: { $gt: 50000000, $lt: 70000000 } })
+            }
+            if (options.includes('diamond')) {
+                level.push({ amountSpent: { $gt: 70000000, $lt: 100000000 } })
+            }
+            if (options.includes('vip')) {
+                level.push({ amountSpent: { $gte: 100000000 } })
+            }
+            if (level.length === 1) {
+                filterCriteria.amountSpent = level[0].amountSpent
+            } else if(level.length > 1) {
+                filterCriteria = {...filterCriteria, $or: level}
+            }
+
+            const bookings = await Booking.find(filterCriteria)
+            res.status(200).json({ data: {msg: 'Danh sách giao dịch sau khi lọc', bookings} })
+
+        } catch (error) {
+            res.status(500).json({ data: {msg: 'Lỗi lọc giao dịch bằng options'} })
+        }
         
     }
     
