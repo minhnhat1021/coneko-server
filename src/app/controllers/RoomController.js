@@ -22,7 +22,6 @@ class RoomsController {
     async filterRoomsByOptions(req, res, next) {
         try {
             const { options } = req.body
-             console.log(options)
             
             let filterCriteria = {}
     
@@ -37,54 +36,54 @@ class RoomsController {
             
             // Loại giường
             const bedTypes = []
-            if (options.includes('singlebed')) {
+            if (options.includes('singleBed')) {
                 bedTypes.push('single')
             }
-            if (options.includes('doublebed')) {
+            if (options.includes('doubleBed')) {
                 bedTypes.push('double')
             }
             if (bedTypes.length > 0) {
                 filterCriteria.bedType = { $in: bedTypes }
             }
             const bedCounts = []
-            if (options.includes('onebed')) {
+            if (options.includes('oneBed')) {
                 bedCounts.push('1')
             }
-            if (options.includes('twobed')) {
+            if (options.includes('twoBed')) {
                 bedCounts.push('2')
             }
-            if (options.includes('threebed')) {
+            if (options.includes('threeBed')) {
                 bedCounts.push('3')
             }
             if (bedCounts.length > 0) {
                 filterCriteria.bedCount = { $in: bedCounts }
             }
             
-    
-            // Sức chứa phòng
-            const capacitys = []
-            if (options.includes('oneperson')) {
-                capacitys.push('1')
-            } if (options.includes('twoperson')) {
-                capacitys.push('2')
-            } if (options.includes('threeperson')) {
-                capacitys.push('3')
+            const prices = []
+            if (options.includes('standard')) {
+                prices.push({ price: { $lte: 8000000 } })
+            } 
+            if (options.includes('elegance')) {
+                prices.push({ price: { $gt: 8000000, $lt: 10000000 } })
+            } 
+            if (options.includes('skyviewSuite')) {
+                prices.push({ price: { $gte: 10000000 } })
             }
-            if(capacitys.length > 0){
-                filterCriteria.capacity = { $in: capacitys }
+            
+            if (prices.length === 1) {
+                filterCriteria.price = prices[0].price
+            } else if(prices.length > 1) {
+                filterCriteria = {...filterCriteria, $or: prices}
             }
+            
             // Chính sách hút thuốc
             if (options.includes('smoke')) {
                 filterCriteria.smoking = true
-            } else if (options.includes('nosmoking')) {
+            } else if (options.includes('noSmoking')) {
                 filterCriteria.smoking = false
             }
 
-            console.log(filterCriteria)
-
-            // // Tìm kiếm các phòng dựa trên các điều kiện đã xây dựng
             const rooms = await Room.find(filterCriteria)
-    
             res.status(200).json({ data: {msg: 'Danh sách phòng sau khi lọc', rooms} })
 
         } catch (error) {

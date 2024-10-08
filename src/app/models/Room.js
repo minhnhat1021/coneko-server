@@ -11,9 +11,8 @@ const Room = new Schema({
 
 
     bedType: { type: String, enum: ['single', 'double', 'queen', 'king', 'twin', 'bunk'], default: 'single' },
-    bedCount: {type: String, default: '1'},
-    floor: { type: String, default: '2' }, 
-    capacity: { type: String, default: '2' }, 
+    bedCount: {type: String, default: '2'},
+    floor: { type: String, default: '5' }, 
     rating: { type: String, min: 1, max: 5, default: '5' }, 
     amenities: { type: [String], enum:['netflix'], default: ['netflix'] }, 
 
