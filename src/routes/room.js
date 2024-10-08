@@ -14,7 +14,6 @@ router.use('/checkout', checkoutRouter)
 // Room controller 
 router.get('/:name/room-detail', roomController.roomDetail)
 router.post('/detail/id', roomController.findRoomById)
-router.post('/filter-options', roomController.filterRoomsByOptions)
 
 
 module.exports = router 

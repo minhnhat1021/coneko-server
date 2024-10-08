@@ -86,18 +86,58 @@ class UserController {
         }
     }
 
-    // [Get] /user/search
-    findUser(req, res) {
-        const {q} = req.query
-        User.findOne({userName: req.query.q}) 
+    // [Get] /user/find-user/id
+    findUserById(req, res) {
+        const { userId } = req.body
+
+        if(!userId) {
+            User.find({}) 
+            .then((user) => {
+                if(user) {
+                    return res.status(200).json({ data: {msg: 'Đã tìm thấy tài khoản', user} })
+                }else {
+                    return res.json({ data: {msg: 'Không tìm thấy tài khoản này'} })
+                }
+            })    
+        } else if (userId) {
+            User.findById( userId ) 
             .then((user) => {
 
                 if(user) {
-                    res.status(200).json({ msg: 'Đã tìm thấy tài khoản', user })
+                    res.status(200).json({ data: {msg: 'Đã tìm thấy tài khoản', user} })
                 }else {
-                    res.json({msg: 'Không tìm thấy tài khoản này'})
+                    res.json({ data: {msg: 'Không tìm thấy tài khoản này'} })
                 }
-            })    
+            }) 
+        }
+           
+    }
+
+    // [Get] /user/find-user/username
+    findUserByUserName(req, res) {
+        const { userName } = req.body
+
+        if(!userName) {
+            User.find({}) 
+                .then((user) => {
+                    if(user) {
+                        return res.status(200).json({ data: {msg: 'Đã tìm thấy tài khoản', user} })
+                    }else {
+                         return res.json({ data: {msg: 'Không tìm thấy tài khoản này'} })
+                    }
+                })    
+        }
+        else if(userName) {
+            User.find({ userName: { $regex: userName, $options: "i" }}) 
+            .then((user) => {
+
+                if(user) {
+                    res.status(200).json({ data: {msg: 'Đã tìm thấy tài khoản', user} })
+                }else {
+                    res.json({ data: {msg: 'Không tìm thấy tài khoản này'} })
+                }
+            })   
+        }
     }
 }
 
