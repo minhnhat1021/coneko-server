@@ -11,6 +11,7 @@ const Admin = new Schema({
     userName: {type: String, default: ''},
     password: {type: String, default: ''},
     fullName: {type: String, default: ''},
+    isActive: {type: Boolean, default: true},
     verifyToken: {type: String, default: ''},
 }, {
     timestamps: true // tạo dữ liệu về thời gian tạo và xóa Admin

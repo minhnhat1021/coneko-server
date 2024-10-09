@@ -12,6 +12,8 @@ const adminController = require('../app/controllers/AdminController')
 router.get('/user',  adminController.User)
 
 router.post('/login',  adminController.adminLogin)
+router.post('/register',  adminController.adminRegister)
+router.post('/logout',  adminController.adminLogout)
 
 router.get('/banned-users',  adminController.bannedUsers)
 

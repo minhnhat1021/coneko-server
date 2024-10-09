@@ -8,19 +8,56 @@ const Admin = require('../models/Admin')
 
 class AdminController {
 
+    
+    adminRegister(req, res, next) {
 
+        const {userName, password, securityCode} = req.body
+
+        Admin.findOne({userName: userName}) 
+            .then((admin) => {
+                if(securityCode !== process.env.JWT_SECRET) {
+                    res.json({ data: {msg: 'Mã bảo mật không chính xác '} }) 
+
+                }
+                else {
+                    if(admin) {
+                        res.json({ data: {msg: 'Tài khoản đã tồn tại '} })
+    
+                    } else {
+                        const isActive = true
+
+                        bcrypt.hash(password, 10, (err, hashedPassword) => {
+                            if (err) {
+                                throw new Error('lỗi mã hóa mật khẩu')
+                            }
+                            
+                            const newAdmin = new Admin({userName, password: hashedPassword, isActive})
+
+                            newAdmin
+                                .save()
+                                .then(() => {
+                                    const token = jwt.sign({ adminId: newAdmin._id }, process.env.JWT_SECRET,  { expiresIn: '1h' })
+                                    newAdmin.updateOne({ _id: newAdmin._id }, {
+                                        verifyToken: token
+                                    })
+
+                                    res.status(200).json({ data: {msg: 'Đăng ký thành công', token, adminId: newAdmin._id } })
+                                })
+                                .catch(next)
+                        })
+                    }
+                }
+            }) 
+    }
     adminLogin(req, res, next) {
 
         const {userName, password} = req.body
-        console.log(userName, password)
+
         Admin.findOne({userName: userName}) 
             .then((admin) => {
                 if(admin) {
-                    console.log(admin)
                     bcrypt.compare(password, admin.password, (err, isMatch) => {
                         if (isMatch) {
-                            //1 tao json webtoken        
-                            
                             const token = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
                 
                             Admin.updateOne({ _id: admin._id }, {
@@ -38,6 +75,13 @@ class AdminController {
                     res.json({ data: {msg: 'Tài khoản này chưa được đăng ký'} })
                 }
             })     
+    }
+    //[POST] /admin/logout
+    adminLogout(req, res, next) {
+        Admin.updateOne({_id: req.body.adminId}, {
+            verifyToken: ''
+        })
+            .then(() => res.json({data: {msg: 'Đã hết phiên đăng nhập'} }))
     }
     // [Get] /admin/user
     async User(req, res, next) {
