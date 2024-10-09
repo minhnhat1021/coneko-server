@@ -17,7 +17,7 @@ const Room = new Schema({
     amenities: { type: [String], enum:['netflix'], default: ['netflix'] }, 
 
 
-    image: { type: String, default: '' },
+    images: { type: [String], default: '' },
     smoking: { type: Boolean, default: false }, 
     status: { type: String, enum: ['available', 'booked', 'inUse'], default: 'available' },
     roomSize: { type: Number, default: 40 }, 

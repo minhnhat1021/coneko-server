@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + path.extname(file.originalname))
     }
 })
-const uploadMiddleware = multer({ storage: storage }).single('file')
+const uploadMiddleware = multer({ storage: storage }).array('file', 3)
 
 
 module.exports = uploadMiddleware

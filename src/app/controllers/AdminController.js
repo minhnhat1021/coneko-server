@@ -86,7 +86,6 @@ class AdminController {
 
     //[Post] /adminDetails
     adminDetails(req, res, next) {
-        console.log(req.admin)
         res.json( req.admin )
     }
     // [Get] /admin/user
@@ -212,7 +211,7 @@ class AdminController {
     // [POST] /admin/create-room
     createRoom(req, res, next) {
         const newRoom = new Room(req.body)
-
+        
         newRoom.save()
             .then(() => res.json({ data: {msg: 'Thêm phòng thành công'} }))
             .catch(next)
@@ -220,9 +219,19 @@ class AdminController {
 
     // [POST] /admin/upload
     uploadRoom(req, res, next) {
-        console.log(req.file)
 
-        res.json({ data: req.file })
+        const files = req.files
+
+        const fileOrder = req.body.fileOrder.sort((a, b) => {
+            return b - a
+        })
+        const images = []
+
+        files.forEach((file, index) => {
+            images.push(files[fileOrder[index]])
+        })
+
+        res.json({ data: images })
 
     }
 
