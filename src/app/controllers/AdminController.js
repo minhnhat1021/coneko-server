@@ -41,7 +41,7 @@ class AdminController {
                                         verifyToken: token
                                     })
 
-                                    res.status(200).json({ data: {msg: 'Đăng ký thành công', token, adminId: newAdmin._id } })
+                                    res.status(200).json({ data: {msg: 'Đăng ký thành công', token } })
                                 })
                                 .catch(next)
                         })
@@ -64,7 +64,7 @@ class AdminController {
                                 verifyToken: token
                             })
                                 .then(() => {
-                                    return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token, adminId: admin._id} })
+                                    return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token} })
                                 })
                         } else {
                             return res.json({ data: {msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'} });
@@ -82,6 +82,12 @@ class AdminController {
             verifyToken: ''
         })
             .then(() => res.json({data: {msg: 'Đã hết phiên đăng nhập'} }))
+    }
+
+    //[Post] /adminDetails
+    adminDetails(req, res, next) {
+        console.log(req.admin)
+        res.json( req.admin )
     }
     // [Get] /admin/user
     async User(req, res, next) {

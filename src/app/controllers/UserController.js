@@ -3,47 +3,12 @@ const Room = require('../models/Room')
 
 class UserController {
 
-
+    //[Post] /userDetails
     userDetail(req, res, next) {
-        User.findOne({fullName: req.params.name})
-            .then(user => res.json(user))
-    }
-    // [Get] /user/account
-    show(req, res, next) {
         res.json( req.user )
     }
 
-    // [Get] /user/account
-    account(req, res, next) {
-        res.json(req.user)
-    }
-
-    // [Get] /user/purchase
-    purchase(req, res, next) {
-        res.json(req.user)
-    }
-
-    // [Get] /user/booking-history
-    bookingHistory(req, res, next) {
-        res.json(req.user)
-    }
-    
-    // [Get] /user/favorite-rooms
-    favoriteRooms(req, res, next) {
-        res.json(req.user)
-    }
-
-    // [Get] /user/current-rooms
-    currentRooms(req, res, next) {
-        res.json(req.user)
-    }
-
-    paycard(req, res, next) {
-        res.json(req.user)
-    }
-
     // [Patch] /favorite-rooms/add
-
     async addFavoriteRooms(req, res, next) {
         try {
             const { userId, roomId } = req.body
@@ -64,7 +29,6 @@ class UserController {
     }
 
     // [Patch] /favorite-rooms/remove
-
     async removeFavoriteRooms(req, res, next) {
         try {
             const { userId, roomId } = req.body

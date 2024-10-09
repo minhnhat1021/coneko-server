@@ -30,7 +30,7 @@ class LoginController {
                                 verifyToken: token
                             })
                                 .then(() => {
-                                    return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token, userId: user._id} })
+                                    return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token} })
                                 })
                         } else {
                             return res.json({ data: {msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'} });

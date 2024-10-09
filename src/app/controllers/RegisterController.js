@@ -45,7 +45,7 @@ class RegisterController {
                                     verifyToken: token
                                 })
 
-                                res.status(200).json({ data: {msg: 'Đăng ký thành công', token, userId: userRegister._id } })
+                                res.status(200).json({ data: {msg: 'Đăng ký thành công', token} })
                             })
                             .catch(next)
                     })

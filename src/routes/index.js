@@ -3,7 +3,7 @@ const apiRouter = require('./api')
 
 function route(app){
 
-    app.use('/api', apiRouter);
+    app.use('/api', apiRouter)
     
     app.use('/', siteRouter)
 }

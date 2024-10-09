@@ -3,7 +3,7 @@ const router = express.Router()
 const multer = require('multer')
 
 
-const loginMiddleware = require('../app/middlewares/loginMiddleware')
+const adminLoginMiddleware = require('../app/middlewares/adminLoginMiddleware')
 const uploadMiddleware = require ('../app/middlewares/uploadMiddleware')
 
 const adminController = require('../app/controllers/AdminController')
@@ -14,6 +14,9 @@ router.get('/user',  adminController.User)
 router.post('/login',  adminController.adminLogin)
 router.post('/register',  adminController.adminRegister)
 router.post('/logout',  adminController.adminLogout)
+
+router.post('/adminDetails',adminLoginMiddleware,  adminController.adminDetails)
+
 
 router.get('/banned-users',  adminController.bannedUsers)
 
