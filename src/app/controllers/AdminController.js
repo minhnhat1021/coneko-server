@@ -220,18 +220,9 @@ class AdminController {
     // [POST] /admin/upload
     uploadRoom(req, res, next) {
 
-        const files = req.files
+        const file = req.file
 
-        const fileOrder = req.body.fileOrder.sort((a, b) => {
-            return b - a
-        })
-        const images = []
-
-        files.forEach((file, index) => {
-            images.push(files[fileOrder[index]])
-        })
-
-        res.json({ data: images })
+        res.json({ data: file })
 
     }
 

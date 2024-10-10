@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const multer = require('multer')
+const { v4: uuidv4 } = require('uuid')
 
 // Tạo đường dẫn đến thư mục cần lưu file ảnh khi tải lên
 const uploadDir = path.join(__dirname,'..', '..' , 'public', 'images', 'roomImg')
@@ -16,10 +17,10 @@ const storage = multer.diskStorage({
         cb(null, uploadDir)
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname))
+        cb(null, Date.now() + '-' + uuidv4() + path.extname(file.originalname))
     }
 })
-const uploadMiddleware = multer({ storage: storage }).array('file', 3)
+const uploadMiddleware = multer({ storage: storage }).single('file')
 
 
 module.exports = uploadMiddleware
