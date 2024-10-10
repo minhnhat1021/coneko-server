@@ -62,8 +62,8 @@ class RoomsController {
     async conekoCheckout(req, res, next) {
         try{
             let { 
-                startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,  totalPrice, roomId, userId 
+                startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+                originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId 
             } = req.body
 
             // Kiểm tra user
@@ -75,7 +75,7 @@ class RoomsController {
             // Kiểm tra số dư
             const newAccountBalance = user.accountBalance - totalPrice
             if (newAccountBalance < 0) {
-                return res.status(400).json({ data: { msg: 'Số sư tài khoản không hợp lệ' } })
+                return res.json({ data: {insufficientBalance: true, msg: 'Số sư tài khoản không hợp lệ' } })
             }
 
             user.accountBalance = newAccountBalance
@@ -83,9 +83,7 @@ class RoomsController {
 
             user.level = await handleLevel(user.totalSpent)
 
-            
             const bookingDate = Date.now()
-            // Handle model User ----------------------------------------------------------------
             
             const newBooking = {
                 userId,
@@ -98,6 +96,9 @@ class RoomsController {
                 amenitiesPrice, 
                 amenitiesCharge, 
                 amenities, 
+                originalPrice, 
+                discountRate, 
+                discountAmount,
                 amountSpent: totalPrice,
                 bookingDate
             }
@@ -109,7 +110,11 @@ class RoomsController {
             room.bookedUsers.push({
                 userId
             })
-
+            room.currentUsers.push({
+                userId,
+                checkInDate: startDate,
+                checkOutDate: endDate,
+            })
             // Lưu dữ liệu vào trong data booking
             const bookingDetails = await Booking.create({...newBooking, user, room})
 
@@ -123,12 +128,14 @@ class RoomsController {
             
             // Thêm giao dịch vào lịch sử phòng đã đặt
             user.bookedRooms.push(newBooking)
+            user.currentRooms.push(newBooking)
+
             bookingDetails.qrCode = qrCode
 
             await user.save()
             await room.save()
             await bookingDetails.save()
-            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room, qrCode  } })
+            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room, qrCode } })
 
         } catch(err) {
             next(err)
@@ -221,7 +228,7 @@ class RoomsController {
         try {
             const { 
                 startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,  totalPrice, roomId, userId, paymentId, payerId
+                amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice, roomId, userId, paymentId, payerId
             } = req.body.payPalDetails
             
             // Lưu thông tin đặt phòng vào user và room
@@ -248,6 +255,9 @@ class RoomsController {
                 amenitiesPrice, 
                 amenitiesCharge, 
                 amenities, 
+                originalPrice, 
+                discountRate, 
+                discountAmount,
                 amountSpent: totalPrice,
                 bookingDate
             }
@@ -281,6 +291,8 @@ class RoomsController {
             
             // Thêm giao dịch vào lịch sử phòng đã đặt
             user.bookedRooms.push(newBooking)
+            user.currentRooms.push(newBooking)
+
             bookingDetails.qrCode = qrCode
 
             await user.save()
@@ -308,7 +320,7 @@ class RoomsController {
         
             let { 
                 startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,  totalPrice, roomId, userId 
+                amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice, roomId, userId 
             } = req.body
 
             function sortObject(obj) {
@@ -332,7 +344,7 @@ class RoomsController {
 
             const bookingDate = Date.now()
             const vnPayPayment = new VnPayTransaction({orderId, userId, roomId, checkInDate: startDate, checkOutDate: endDate, days,
-                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate})
+                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate})
                                 
             await vnPayPayment.save()
             const vnPayCheckoutId = vnPayPayment._id
@@ -418,7 +430,7 @@ class RoomsController {
 
 
             const {userId, roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice,
-                amenitiesCharge, amenities, amountSpent, bookingDate} = paymentDetails
+                amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, amountSpent, bookingDate} = paymentDetails
 
             // Handle model User ----------------------------------------------------------------
             const user = await User.findById(userId)
@@ -445,7 +457,7 @@ class RoomsController {
             })
             
             const vnPayDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-            amenitiesCharge, amenities, totalPrice: amountSpent, roomId, userId, bookingDate}
+            amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice: amountSpent, roomId, userId, bookingDate}
             
             // Lưu dữ liệu vào trong data booking
             const bookingDetails = await Booking.create({
@@ -458,6 +470,9 @@ class RoomsController {
                 amenitiesCharge, 
                 amenities,
                 amountSpent,
+                originalPrice, 
+                discountRate, 
+                discountAmount,
                 roomId, 
                 userId, 
                 bookingDate,
@@ -474,7 +489,11 @@ class RoomsController {
             // Thêm giao dịch vào lịch sử phòng đã đặt
             user.bookedRooms.push({
                 roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent, bookingDate, qrCode
+                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent, bookingDate, qrCode
+            })
+            user.currentRooms.push({
+                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent, bookingDate, qrCode
             })
 
             bookingDetails.qrCode = qrCode
@@ -483,7 +502,7 @@ class RoomsController {
             await room.save()
             await bookingDetails.save()
 
-            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng vnPay thành công', vnPayDetails } })
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng vnPay thành công', vnPayDetails, qrCode } })
 
         } catch(err) {
             next(err)
@@ -494,8 +513,8 @@ class RoomsController {
     // vnPay check out -------------------------------------------------------------------
     async zaloPayCheckout(req, res, next) {
         let { 
-            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-            amenitiesCharge, amenities,  totalPrice, roomId, userId 
+            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+            originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId 
         } = req.body
 
         const paymentDetails = encodeURIComponent(JSON.stringify(req.body))
@@ -620,8 +639,8 @@ class RoomsController {
         try{    
             const { zaloPayDetails } = req.body
             
-            const { startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, totalPrice, roomId, userId  } = zaloPayDetails
+            const { startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+                originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId  } = zaloPayDetails
 
             // Handle model User ----------------------------------------------------------------
             const user = await User.findById(userId)
@@ -659,6 +678,9 @@ class RoomsController {
                 amenitiesPrice, 
                 amenitiesCharge, 
                 amenities,
+                originalPrice, 
+                discountRate, 
+                discountAmount,
                 amountSpent: totalPrice,
                 roomId, 
                 userId, 
@@ -676,7 +698,11 @@ class RoomsController {
             // Thêm giao dịch vào lịch sử phòng đã đặt
             user.bookedRooms.push({
                 roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, amountSpent: totalPrice, bookingDate, qrCode
+                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate, qrCode
+            })
+            user.currentRooms.push({
+                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
+                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate, qrCode
             })
 
             bookingDetails.qrCode = qrCode
@@ -685,7 +711,7 @@ class RoomsController {
             await room.save()
             await bookingDetails.save()
 
-            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1} })
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1, qrCode} })
 
         } catch(err) {
             next(err)

@@ -76,7 +76,7 @@ class RoomsController {
                 prices.push({ price: { $lte: 4000000 } })
             } 
             if (options.includes('elegance')) {
-                prices.push({ price: { $gt: 4000000, $lt: 80000000 } })
+                prices.push({ price: { $gt: 4000000, $lt: 8000000 } })
             } 
             if (options.includes('skyviewSuite')) {
                 prices.push({ price: { $gte: 8000000 } })

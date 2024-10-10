@@ -22,8 +22,11 @@ const VnPayTransactionSchema = new Schema({
   amenitiesPrice: {type: Number}, 
   amenitiesCharge: {type: Number}, 
   amenities: {type: Object}, 
-  bookingDate: { type: Date },
+  originalPrice: { type: Number }, 
+  discountRate: { type: Number }, 
+  discountAmount: { type: Number },
   amountSpent: { type: Number },
+  bookingDate: { type: Date },
   
 },{
     timestamps: true // tạo dữ liệu về thời gian tạo và xóa User

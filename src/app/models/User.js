@@ -24,13 +24,18 @@ const User = new Schema({
             checkInDate: {type: Date}, 
             checkOutDate: {type: Date}, 
             days: {type: Number},
+
             roomPrice: {type: Number}, 
             roomCharge: {type: Number}, 
             amenitiesPrice: {type: Number}, 
             amenitiesCharge: {type: Number}, 
             amenities: {type: Object}, 
             bookingDate: { type: Date },
+            originalPrice: { type: Number }, 
+            discountRate: { type: Number }, 
+            discountAmount: { type: Number },
             amountSpent: { type: Number },
+
             qrCode: { type: String },
             _id: false
         }
@@ -41,13 +46,19 @@ const User = new Schema({
             checkInDate: {type: Date}, 
             checkOutDate: {type: Date}, 
             days: {type: Number},
+
             roomPrice: {type: Number}, 
             roomCharge: {type: Number}, 
             amenitiesPrice: {type: Number}, 
             amenitiesCharge: {type: Number}, 
             amenities: {type: Object}, 
             bookingDate: { type: Date },
+            originalPrice: { type: Number }, 
+            discountRate: { type: Number }, 
+            discountAmount: { type: Number },
             amountSpent: { type: Number },
+            
+            qrCode: { type: String },
             _id: false
         }
     ],

@@ -2,7 +2,12 @@ const User = require('../models/User')
 const Room = require('../models/Room')
 
 class UserController {
-
+    //[GET]  api test username
+    userByName(req, res, next) {
+        User.findOne({ userName: req.params.name })
+           .then(user => res.json(user))
+           .catch(err => next(err))
+    }
     //[Post] /userDetails
     userDetail(req, res, next) {
         res.json( req.user )
