@@ -13,7 +13,6 @@ class RegisterController {
 
     // [POST] /register
     register(req, res, next) {
-        
         User.findOne({email: req.body.email}) 
             .then((user) => {
                 if(user) {

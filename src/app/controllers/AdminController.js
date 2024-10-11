@@ -78,7 +78,7 @@ class AdminController {
     }
     //[POST] /admin/logout
     adminLogout(req, res, next) {
-        Admin.updateOne({_id: req.body.adminId}, {
+        Admin.updateOne({_id: req.admin.data._id}, {
             verifyToken: ''
         })
             .then(() => res.json({data: {msg: 'Đã hết phiên đăng nhập'} }))

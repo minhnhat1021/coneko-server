@@ -44,7 +44,7 @@ class LoginController {
     }
     //[POST] /login/out
     logout(req, res, next) {
-        User.updateOne({_id: req.body.userId}, {
+        User.updateOne({_id: req.user.data._id}, {
             verifyToken: ''
         })
             .then(() => res.json({data: {msg: 'Đã hết phiên đăng nhập'} }))
@@ -79,14 +79,14 @@ class LoginController {
                     verifyToken: token
                 })
 
-                res.status(200).json({ data: { msg: 'Đăng ký bằng google thành công', token, userId: userGoogle._id } })
+                res.status(200).json({ data: { msg: 'Đăng ký bằng google thành công', token } })
                     
                     
             } else if(user){
                 const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
                 await User.updateOne({ _id: user._id }, {verifyToken: token})
 
-                return res.status(200).json({ data: { msg: 'Đăng nhập bằng google thành công', token, userId: user._id} })
+                return res.status(200).json({ data: { msg: 'Đăng nhập bằng google thành công', token} })
             }
 
         } catch (error) {
@@ -125,12 +125,12 @@ class LoginController {
                 verifyToken: token
             })
 
-            res.status(200).json({ data: { msg: 'Đăng ký bằng facebook thành công', token, userId: userFacebook._id } })
+            res.status(200).json({ data: { msg: 'Đăng ký bằng facebook thành công', token } })
         } else if(user){
             const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
             await User.updateOne({ _id: user._id }, {verifyToken: token})
 
-            return res.status(200).json({ data: { msg: 'Đăng nhập bằng facebook thành công', token, userId: user._id} })
+            return res.status(200).json({ data: { msg: 'Đăng nhập bằng facebook thành công', token} })
         }
     }
 }

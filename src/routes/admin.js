@@ -13,7 +13,7 @@ router.get('/user',  adminController.User)
 
 router.post('/login',  adminController.adminLogin)
 router.post('/register',  adminController.adminRegister)
-router.post('/logout',  adminController.adminLogout)
+router.post('/logout', adminLoginMiddleware,  adminController.adminLogout)
 
 router.post('/adminDetails',adminLoginMiddleware,  adminController.adminDetails)
 
