@@ -24,7 +24,7 @@ class LoginController {
                         if (isMatch) {
                             //1 tao json webtoken        
                             
-                            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
+                            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' })
                 
                             User.updateOne({ _id: user._id }, {
                                 verifyToken: token
@@ -33,7 +33,7 @@ class LoginController {
                                     return res.status(200).json({ data: { msg: 'Đăng nhập thành công', token} })
                                 })
                         } else {
-                            return res.json({ data: {msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'} });
+                            return res.json({ data: {msg: 'Thông tin tài khoản hoặc mật khẩu không chính xác'} })
                         }
                         
                     })   
@@ -83,14 +83,14 @@ class LoginController {
                     
                     
             } else if(user){
-                const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
+                const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' })
                 await User.updateOne({ _id: user._id }, {verifyToken: token})
 
                 return res.status(200).json({ data: { msg: 'Đăng nhập bằng google thành công', token} })
             }
 
         } catch (error) {
-            console.error('Error verifying token:', error);
+            console.error('Error verifying token:', error)
             res.status(401).json({ msg: 'Xác thực không thành công!' })
         }
     }
@@ -127,7 +127,7 @@ class LoginController {
 
             res.status(200).json({ data: { msg: 'Đăng ký bằng facebook thành công', token } })
         } else if(user){
-            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' });
+            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,  { expiresIn: '1h' })
             await User.updateOne({ _id: user._id }, {verifyToken: token})
 
             return res.status(200).json({ data: { msg: 'Đăng nhập bằng facebook thành công', token} })
