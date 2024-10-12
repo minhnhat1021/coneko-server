@@ -26,14 +26,45 @@ const Room = new Schema({
     bookedUsers: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-            
+            checkInDate: {type: Date}, 
+            checkOutDate: {type: Date}, 
+            days: {type: Number},
+            bookingDate: { type: Date },
+
+            roomPrice: {type: Number}, 
+            roomCharge: {type: Number}, 
+            amenitiesPrice: {type: Number}, 
+            amenitiesCharge: {type: Number}, 
+            amenities: {type: Object}, 
+            originalPrice: { type: Number }, 
+            discountRate: { type: Number }, 
+            discountAmount: { type: Number },
+            amountSpent: { type: Number },
+
+            qrCode: { type: String },
+            _id: false
         }
     ],
     currentUsers: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-            checkInDate: { type: Date },
-            checkOutDate: { type: Date },
+            checkInDate: {type: Date}, 
+            checkOutDate: {type: Date}, 
+            days: {type: Number},
+            bookingDate: { type: Date },
+
+            roomPrice: {type: Number}, 
+            roomCharge: {type: Number}, 
+            amenitiesPrice: {type: Number}, 
+            amenitiesCharge: {type: Number}, 
+            amenities: {type: Object}, 
+            originalPrice: { type: Number }, 
+            discountRate: { type: Number }, 
+            discountAmount: { type: Number },
+            amountSpent: { type: Number },
+
+            qrCode: { type: String },
+            _id: false
         }
     ],
 

@@ -11,16 +11,23 @@ const mongooseDelete = require('mongoose-delete')
 const Booking = new Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+
     checkInDate: {type: Date}, 
     checkOutDate: {type: Date}, 
     days: {type: Number},
+    bookingDate: { type: Date },
+
+
     roomPrice: {type: Number}, 
     roomCharge: {type: Number}, 
     amenitiesPrice: {type: Number}, 
     amenitiesCharge: {type: Number}, 
     amenities: {type: Object}, 
-    bookingDate: { type: Date },
+    originalPrice: { type: Number }, 
+    discountRate: { type: Number }, 
+    discountAmount: { type: Number },
     amountSpent: { type: Number },
+
     qrCode: { type: String },
 
     user: { type: Object },

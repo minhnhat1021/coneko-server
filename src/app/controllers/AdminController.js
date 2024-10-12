@@ -120,12 +120,6 @@ class AdminController {
             .catch(next)
     }
 
-    forceDeleteUser(req, res, next) {
-        User.deleteOne({ _id: req.body.userId})
-            .then(() => res.json({data: {msg: 'Xóa vĩnh viễn user thành công'} }))
-            .catch(next)
-    }
-
      // User actions 
     userActions(req, res, next) {
         const { action, userIds } = req.body

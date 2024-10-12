@@ -56,90 +56,104 @@ const handleLevel = (totalSpent) => {
     }
     return 'normal'
 }
+async function handleCheckout(details, res, next, paymentMethod) {
+    try{
+        const { 
+            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+            originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId 
+        } = details
+        console.log('chi tiết thanh toán:', details)
+
+        // Kiểm tra user
+        const user = await User.findById(userId)
+        if (!user) {
+            return res.json({ data: {msg: 'User đang thanh toán không khả dụng'} })
+        }
+        let newAccountBalance
+        if(paymentMethod === 'coneko'){
+            newAccountBalance = user.accountBalance - totalPrice
+            if (newAccountBalance < 0) {
+                return res.json({ data: {insufficientBalance: true, msg: 'Số sư tài khoản không hợp lệ' } })
+            }
+            user.accountBalance = newAccountBalance
+        }
+
+        user.totalSpent += totalPrice
+        user.level = await handleLevel(user.totalSpent)
+        
+        const bookingDate = Date.now()
+       
+        const newBooking = {
+            userId,
+            roomId, 
+            checkInDate: startDate, 
+            checkOutDate: endDate, 
+            days,
+            roomPrice, 
+            roomCharge, 
+            amenitiesPrice, 
+            amenitiesCharge, 
+            amenities, 
+            originalPrice, 
+            discountRate, 
+            discountAmount,
+            amountSpent: totalPrice,
+            bookingDate
+        }
+        
+        const room = await Room.findById(roomId)
+        
+        const bookingDetails = await Booking.create({...newBooking, user, room})
+        
+        const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
+
+        const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
+
+        newBooking.qrCode = qrCode
+        
+        user.bookedRooms.push(newBooking)
+        user.currentRooms.push(newBooking)
+
+        room.bookedUsers.push(newBooking)
+        room.currentUsers.push(newBooking)
+
+
+        bookingDetails.qrCode = qrCode
+
+        await user.save()
+
+        await room.save()
+
+        await bookingDetails.save()
+
+
+        if(paymentMethod === 'coneko'){
+
+            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room, qrCode } })
+
+        } else if(paymentMethod === 'payPal'){
+            res.json({ data: { message: 'Lưu dữ liệu thanh toán phòng thành công', return_code: 1, qrCode} })
+
+        } else if(paymentMethod === 'vnPay') {
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng vnPay thành công', vnPayDetails: details, qrCode } })
+
+        } else if(paymentMethod === 'zaloPay'){
+            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1, qrCode} })
+        }
+
+    } catch(err) {
+        next(err)
+    }
+        
+    
+}
 class RoomsController {
 
 
     async conekoCheckout(req, res, next) {
-        try{
-            let { 
-                startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-                originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId 
-            } = req.body
-
-            // Kiểm tra user
-            const user = await User.findById(userId)
-            if (!user) {
-                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
-            }
-
-            // Kiểm tra số dư
-            const newAccountBalance = user.accountBalance - totalPrice
-            if (newAccountBalance < 0) {
-                return res.json({ data: {insufficientBalance: true, msg: 'Số sư tài khoản không hợp lệ' } })
-            }
-
-            user.accountBalance = newAccountBalance
-            user.totalSpent += totalPrice
-
-            user.level = await handleLevel(user.totalSpent)
-
-            const bookingDate = Date.now()
-            
-            const newBooking = {
-                userId,
-                roomId, 
-                checkInDate: startDate, 
-                checkOutDate: endDate, 
-                days,
-                roomPrice, 
-                roomCharge, 
-                amenitiesPrice, 
-                amenitiesCharge, 
-                amenities, 
-                originalPrice, 
-                discountRate, 
-                discountAmount,
-                amountSpent: totalPrice,
-                bookingDate
-            }
-
-            // Handle model Room ----------------------------------------------------------------
-            const room = await Room.findById(roomId)
-
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            room.bookedUsers.push({
-                userId
-            })
-            room.currentUsers.push({
-                userId,
-                checkInDate: startDate,
-                checkOutDate: endDate,
-            })
-            // Lưu dữ liệu vào trong data booking
-            const bookingDetails = await Booking.create({...newBooking, user, room})
-
-            // Thông tin cần được mã hóa vào mã QR
-            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
-
-            // Tạo mã QR
-            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
-
-            newBooking.qrCode = qrCode
-            
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push(newBooking)
-            user.currentRooms.push(newBooking)
-
-            bookingDetails.qrCode = qrCode
-
-            await user.save()
-            await room.save()
-            await bookingDetails.save()
-            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room, qrCode } })
-
-        } catch(err) {
-            next(err)
-        }
+        const checkOutDetails = req.body
+        const paymentMethod = 'coneko'
+        handleCheckout(checkOutDetails, res, next, paymentMethod)
         
     }
 
@@ -225,93 +239,10 @@ class RoomsController {
         }
     }
     async savePayPalCheckout (req,res, next) {
-        try {
-            const { 
-                startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice, roomId, userId, paymentId, payerId
-            } = req.body.payPalDetails
-            
-            // Lưu thông tin đặt phòng vào user và room
-            const user = await User.findById(userId)
-            if (!user) {
-                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
-            }
-
-            user.totalSpent += totalPrice
-
-            user.level = await handleLevel(user.totalSpent)
-
-            const bookingDate = Date.now()
-            // Handle model User ----------------------------------------------------------------
-
-            const newBooking = {
-                userId,
-                roomId, 
-                checkInDate: startDate, 
-                checkOutDate: endDate, 
-                days,
-                roomPrice, 
-                roomCharge, 
-                amenitiesPrice, 
-                amenitiesCharge, 
-                amenities, 
-                originalPrice, 
-                discountRate, 
-                discountAmount,
-                amountSpent: totalPrice,
-                bookingDate
-            }
-
-            // Handle model Room ----------------------------------------------------------------
-            const room = await Room.findById(roomId)
-
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            room.bookedUsers.push({
-                userId
-            })
-
-            // Cập nhật phòng đang có quyền sử dụng
-            room.currentUsers.push({
-                userId,
-                checkInDate: startDate,
-                checkOutDate: endDate,
-            })
-
-            
-            // Lưu dữ liệu vào trong data booking
-            const bookingDetails = await Booking.create({...newBooking, user, room})
-
-            // Thông tin cần được mã hóa vào mã QR
-            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
-
-            // Tạo mã QR
-            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
-
-            newBooking.qrCode = qrCode
-            
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push(newBooking)
-            user.currentRooms.push(newBooking)
-
-            bookingDetails.qrCode = qrCode
-
-            await user.save()
-            await room.save()
-            await bookingDetails.save()
-
-            // Trả về QR code cùng với các thông tin khác nếu cần
-            res.json({ 
-                data: {
-                    message: 'Lưu dữ liệu thanh toán phòng thành công',
-                    return_code: 1,
-                    qrCode,  
-                }
-            })
-
-        } catch (err) {
-            console.error('Lỗi khi lưu thông tin hoặc tạo QR:', err)
-            return res.status(500).json({ error: 'Lỗi khi lưu thông tin hoặc tạo mã QR' })
-        }
+        const checkOutDetails = req.body.payPalDetails
+        const paymentMethod = 'payPal'
+        handleCheckout(checkOutDetails, res, next, paymentMethod)
+        
     }
 
     // vnPay check out -------------------------------------------------------------------
@@ -420,94 +351,23 @@ class RoomsController {
     }
     
     async saveVnPayCheckout (req, res, next) {
-        try{    
-            const { vnPayCheckoutId } = req.body
-            const paymentDetails = await VnPayTransaction.findById(vnPayCheckoutId)
+        const { vnPayCheckoutId } = req.body
+        const vnPayDetails = await VnPayTransaction.findById(vnPayCheckoutId)
 
-            if(!paymentDetails) {
-                return res.status(404).json( { data:{ msg: 'Thanh toán không tồn tại' } })
-            }
+        const { checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+            originalPrice, discountRate, discountAmount,  amountSpent, roomId, userId 
+        } = vnPayDetails
 
+        const checkOutDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
+            originalPrice, discountRate, discountAmount,  totalPrice: amountSpent, roomId, userId}
 
-            const {userId, roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice,
-                amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, amountSpent, bookingDate} = paymentDetails
+        const paymentMethod = 'vnPay'
 
-            // Handle model User ----------------------------------------------------------------
-            const user = await User.findById(userId)
-            if (!user) {
-                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
-            }
-
-            user.totalSpent += amountSpent
-            user.level = await handleLevel(user.totalSpent)
-
-            // Handle model Room ----------------------------------------------------------------
-            const room = await Room.findById(roomId)
-
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            room.bookedUsers.push({
-                userId
-            })
-
-            // Cập nhật phòng đang có quyền sử dụng
-            room.currentUsers.push({
-                userId,
-                checkInDate,
-                checkOutDate,
-            })
-            
-            const vnPayDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-            amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice: amountSpent, roomId, userId, bookingDate}
-            
-            // Lưu dữ liệu vào trong data booking
-            const bookingDetails = await Booking.create({
-                checkInDate,
-                checkOutDate, 
-                days, 
-                roomPrice, 
-                roomCharge, 
-                amenitiesPrice, 
-                amenitiesCharge, 
-                amenities,
-                amountSpent,
-                originalPrice, 
-                discountRate, 
-                discountAmount,
-                roomId, 
-                userId, 
-                bookingDate,
-                user, 
-                room
-            })
-
-            // Thông tin cần được mã hóa vào mã QR
-            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
-
-            // Tạo mã QR
-            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
-            
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push({
-                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent, bookingDate, qrCode
-            })
-            user.currentRooms.push({
-                roomId, checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent, bookingDate, qrCode
-            })
-
-            bookingDetails.qrCode = qrCode
-
-            await user.save()
-            await room.save()
-            await bookingDetails.save()
-
-            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng vnPay thành công', vnPayDetails, qrCode } })
-
-        } catch(err) {
-            next(err)
+        if(!vnPayDetails) {
+            return res.status(404).json( { data:{ msg: 'Thanh toán không tồn tại' } })
         }
-            
+        
+        handleCheckout(checkOutDetails, res, next, paymentMethod)
     }
 
     // vnPay check out -------------------------------------------------------------------
@@ -636,87 +496,9 @@ class RoomsController {
     }
 
     async saveZaloPayCheckout (req, res, next) {
-        try{    
-            const { zaloPayDetails } = req.body
-            
-            const { startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-                originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId  } = zaloPayDetails
-
-            // Handle model User ----------------------------------------------------------------
-            const user = await User.findById(userId)
-            if (!user) {
-                return res.status(404).json({ msg: 'User đang thanh toán không khả dụng' })
-            }
-            
-            user.totalSpent += totalPrice
-            user.level = await handleLevel(user.totalSpent)
-
-            const bookingDate = Date.now()
-
-            // Handle model Room ----------------------------------------------------------------
-            const room = await Room.findById(roomId)
-
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            room.bookedUsers.push({
-                userId
-            })
-
-            // Cập nhật phòng đang có quyền sử dụng
-            room.currentUsers.push({
-                userId,
-                checkInDate: startDate,
-                checkOutDate: endDate,
-            })
-
-            // Lưu dữ liệu vào trong data booking
-            const bookingDetails = await Booking.create({
-                checkInDate: startDate,
-                checkOutDate : endDate, 
-                days, 
-                roomPrice, 
-                roomCharge, 
-                amenitiesPrice, 
-                amenitiesCharge, 
-                amenities,
-                originalPrice, 
-                discountRate, 
-                discountAmount,
-                amountSpent: totalPrice,
-                roomId, 
-                userId, 
-                bookingDate,
-                user, 
-                room
-            })
-
-            // Thông tin cần được mã hóa vào mã QR
-            const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
-
-            // Tạo mã QR
-            const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
-            
-            // Thêm giao dịch vào lịch sử phòng đã đặt
-            user.bookedRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate, qrCode
-            })
-            user.currentRooms.push({
-                roomId, checkInDate: startDate, checkOutDate: endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities,originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate, qrCode
-            })
-
-            bookingDetails.qrCode = qrCode
-
-            await user.save()
-            await room.save()
-            await bookingDetails.save()
-
-            res.json({ data: {message:'Lưu dữ liệu thanh toán phòng bằng zaloPay thành công', return_code: 1, qrCode} })
-
-        } catch(err) {
-            next(err)
-        }
-            
+        const checkOutDetails = req.body.zaloPayDetails
+        const paymentMethod = 'zaloPay'
+        handleCheckout(checkOutDetails, res, next, paymentMethod)  
     }
 }
 

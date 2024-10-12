@@ -17,11 +17,9 @@ router.post('/logout', adminLoginMiddleware,  adminController.adminLogout)
 
 router.post('/adminDetails',adminLoginMiddleware,  adminController.adminDetails)
 
-
 router.get('/banned-users',  adminController.bannedUsers)
 
 router.delete('/user-ban',  adminController.userBan)
-router.delete('/user-force',  adminController.forceDeleteUser)
 router.patch('/user-restore',  adminController.restoreUser)
 
 router.post('/user-actions',  adminController.userActions)
