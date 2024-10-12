@@ -126,11 +126,36 @@ class AdminController {
             .catch(next)
     }
 
+     // User actions 
+    userActions(req, res, next) {
+        const { action, userIds } = req.body
+
+        switch (action) {
+            case 'delete':
+                User.delete({ _id: { $in: userIds } })
+                   .then(() => res.json({ data: {msg: 'Đã chuyển user vào mục bị ban'} }))
+                   .catch(next)
+                break
+            case 'forceDelete':
+                User.deleteMany({ _id: { $in: userIds } })
+                   .then(() => res.json({ data: {msg: 'Đã xóa user thành công'} }))
+                   .catch(next)
+                break
+            case'restore':
+                User.restore({ _id: { $in: userIds } })
+                   .then(() => res.json({ data: {msg: 'Khôi phục user thành công'} }))
+                   .catch(next)
+                break
+            default:
+                return res.json({ data: {msg: 'Hành động k hợp lệ '} })
+        }
+    }
     // Room ----------------------------------------------------------------
     // [Get] /admin/room
     async Room(req, res, next) {
         try {
-            const roomList = await Room.countDocuments({ })
+            const roomList = await Room.countDocuments({})
+            console.log(roomList)
             const roomTrash = await Room.countDocumentsWithDeleted({ deleted: true })
     
             res.status(200).json({ data: {roomList, roomTrash} })
@@ -246,6 +271,30 @@ class AdminController {
             .catch(next)
     }
 
+    // Room actions 
+    roomActions(req, res, next) {
+        const { action, roomIds } = req.body
+
+        switch (action) {
+            case 'delete':
+                Room.delete({ _id: { $in: roomIds } })
+                   .then(() => res.json({ data: {msg: 'Đã chuyển phòng vào thùng rác'} }))
+                   .catch(next)
+                break
+            case 'forceDelete':
+                Room.deleteMany({ _id: { $in: roomIds } })
+                   .then(() => res.json({ data: {msg: 'Đã xóa phòng thành công'} }))
+                   .catch(next)
+                break
+            case'restore':
+                Room.restore({ _id: { $in: roomIds } })
+                   .then(() => res.json({ data: {msg: 'Khôi phục phòng thành công'} }))
+                   .catch(next)
+                break
+            default:
+                return res.json({ data: {msg: 'Hành động k hợp lệ '} })
+        }
+    }
     // Booking management ----------------------------------------------
 
     // [GET] admin/booking-management

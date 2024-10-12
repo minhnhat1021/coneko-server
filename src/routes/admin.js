@@ -24,7 +24,10 @@ router.delete('/user-ban',  adminController.userBan)
 router.delete('/user-force',  adminController.forceDeleteUser)
 router.patch('/user-restore',  adminController.restoreUser)
 
-// Room controller
+router.post('/user-actions',  adminController.userActions)
+
+
+// Room 
 
 router.get('/room',  adminController.Room)
 router.get('/statistics-room',  adminController.statisticsRoom)
@@ -37,6 +40,9 @@ router.put('/room-update',  adminController.updateRoom)
 router.delete('/room-delete',  adminController.deleteRoom)
 router.delete('/room-force',  adminController.forceDeleteRoom)
 router.patch('/room-restore',  adminController.restoreRoom)
+
+router.post('/room-actions',  adminController.roomActions)
+
 
 // Booking management
 router.get('/booking-management',  adminController.bookingManagement)
