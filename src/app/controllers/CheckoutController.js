@@ -9,6 +9,7 @@ var querystring = require('qs')
 const crypto = require('crypto')
 const CryptoJS = require('crypto-js')
 const moment = require('moment')
+const { v4: uuidv4 } = require('uuid')
 const QRCode = require('qrcode')
 
 const paypal = require('paypal-rest-sdk')
@@ -33,14 +34,25 @@ cron.schedule('01 10 * * *', async () => {
             return booking.checkOutDate >= currentTime
         })
 
-        // Cập nhật currentRooms
         user.currentRooms = currentRooms
 
-        // Lưu lại thông tin của user
         await user.save()
+    }
+    const rooms = await Room.find()
+
+    for (const room of rooms) {
+        // Lọc currentUsers từ bookedUsers
+        const currentUsers = room.bookedUsers.filter(booking => {
+            return booking.checkOutDate >= currentTime
+        })
+
+        room.currentUsers = currentUsers
+
+        await room.save()
     }
 
     console.log("đã update currentRooms cho tất cả user")
+    console.log("đã update currentUsers cho tất cả room")
 })
 const handleLevel = (totalSpent) => {
     if (totalSpent >= 100000000) {
@@ -253,7 +265,6 @@ class RoomsController {
                 startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
                 amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice, roomId, userId 
             } = req.body
-
             function sortObject(obj) {
                 let sorted = {}
                 let str = []
@@ -269,11 +280,12 @@ class RoomsController {
                 }
                 return sorted
             }
-
-            let orderId = moment(new Date()).format('DDHHmmss')
+            let timestamp = moment(new Date()).format('DDHHmmss')
+            let orderId = `${timestamp}-${uuidv4()}`
             let vnpUrl = process.env.VNPAY_ENDPOINT
 
             const bookingDate = Date.now()
+
             const vnPayPayment = new VnPayTransaction({orderId, userId, roomId, checkInDate: startDate, checkOutDate: endDate, days,
                 roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate})
                                 

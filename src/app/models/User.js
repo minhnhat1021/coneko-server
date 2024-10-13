@@ -63,7 +63,7 @@ const User = new Schema({
         }
     ],
     role: {type: String, default: ''},
-    level: {type: String, default: ''},
+    level: {type: String, default: 'normal'},
     isActive: {type: Boolean, default: true},
     verifyToken: {type: String, default: ''},
     googleId: {type: String, default: ''},
