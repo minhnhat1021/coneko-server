@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
        {
-          name: "my-app",
+          name: "coneko-sv",
           script: "src/server.js",  
           instances: "max",
           exec_mode: "cluster",  
