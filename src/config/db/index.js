@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 async function connect() {
     try {
-        await mongoose.connect('mongodb://localhost:27017/coneko_hotel_dev', {
+        await mongoose.connect('mongodb://localhost:27017/coneko_hotel', {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
