@@ -6,9 +6,9 @@ async function connect() {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
-        console.log('kết nối thành công')
+        console.log('kết nối đến database thành công')
     } catch (err) {
-        console.log('kết nối thất bại')
+        console.log('kết nối đến database thất bại')
 
     }
 }

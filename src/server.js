@@ -15,6 +15,7 @@ dotenv.config()
 
 const route = require('./routes')
 const db = require('./config/db')
+
 // cho phép gọi lên backend
 app.use(cors());
 
