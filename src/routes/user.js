@@ -5,10 +5,6 @@ const router = express.Router()
 const loginMiddleware = require('../app/middlewares/loginMiddleware')
 const userController = require('../app/controllers/UserController')
 
-router.post('/test',  userController.apiTest)
-router.get('/testGet',  userController.apiTestGet)
-
-
 // user controller
 router.post('/userDetails', loginMiddleware,  userController.userDetail)
 router.get('/:name', userController.userByName)
