@@ -7,10 +7,6 @@ const path = require('path')
 
 //muter
 
-
-
-
-
 var session = require('express-session')
 const cors = require('cors');
 

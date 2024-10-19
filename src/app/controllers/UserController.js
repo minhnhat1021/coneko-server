@@ -2,6 +2,15 @@ const User = require('../models/User')
 const Room = require('../models/Room')
 
 class UserController {
+    //[POST]  api test username
+    apiTest(req, res, next) {
+        const {a, b} = req.body
+        res.json({data: {msg: `Tổng của ${a} và ${b} là ${a + b}`} })
+    }
+    //[GET]  api test username
+    apiTestGet(req, res, next) {
+        res.json({data: {msg: `Bạn đang truy cập vào backend trên server`} })
+    }
     //[GET]  api test username
     userByName(req, res, next) {
         User.findOne({ userName: req.params.name })
