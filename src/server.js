@@ -20,7 +20,7 @@ const db = require('./config/db')
 app.use(cors());
 
 app.use(express.static(path.join(__dirname, 'public')))
-
+console.log('duongdan:',__dirname)
 
 // connect to db
 db.connect()
