@@ -12,7 +12,7 @@ module.exports = {
           },
           env_production: {
           NODE_ENV: "production",
-          exec_interpreter: "node",  
+          exec_interpreter: "node", 
           },
        },
     ],
