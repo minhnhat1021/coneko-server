@@ -194,7 +194,7 @@ class RoomsController {
                 "description": `Thanh toán bằng payPal`
             }],
             "redirect_urls": {
-                "return_url": `/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
+                "return_url": `http://coneko.online/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
                 "cancel_url": "/payment-cancel"    // URL khi thanh toán bị hủy
             }
         }
@@ -301,7 +301,7 @@ class RoomsController {
             vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId
             vnp_Params['vnp_OrderType'] = 'other'
             vnp_Params['vnp_Amount'] = totalPrice * 100
-            vnp_Params['vnp_ReturnUrl'] = `/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
+            vnp_Params['vnp_ReturnUrl'] = `http://coneko.online/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
             vnp_Params['vnp_IpAddr'] = '127.0.0.1'
             vnp_Params['vnp_CreateDate'] = moment(new Date()).format('YYYYMMDDHHmmss')
             vnp_Params['vnp_BankCode'] = 'NCB'
@@ -399,7 +399,7 @@ class RoomsController {
         }
 
         const embed_data = {
-            redirecturl: `/payment-verification?zalopayDetails=${paymentDetails}`,
+            redirecturl: `http://coneko.online/payment-verification?zalopayDetails=${paymentDetails}`,
         }
         const items = [{}]
         const transID = Math.floor(Math.random() * 1000000);
@@ -413,7 +413,7 @@ class RoomsController {
             amount: totalPrice,
             description: `Thanh toán đặt phòng #${transID}`,
             bank_code: "",
-            callback_url: 'https://c8fa-2402-800-61ed-ab3e-2009-85a9-e669-e3f8.ngrok-free.app/api/room/checkout/zalopay/confirm'
+            callback_url: 'http://coneko.online/api/room/checkout/zalopay/confirm'
             
         }
 
