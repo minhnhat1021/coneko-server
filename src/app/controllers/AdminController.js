@@ -238,7 +238,7 @@ class AdminController {
 
     // [POST] /admin/upload
     uploadRoom(req, res, next) {
-
+        console.log('anh:', req.file)
         const file = req.file
 
         res.json({ data: file })

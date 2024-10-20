@@ -6,7 +6,6 @@ const axios = require('axios')
 
 const { OAuth2Client } = require('google-auth-library')
 const clientGoogle = new OAuth2Client(process.env.GG_CLIENT_ID)
-
 class LoginController {
     
     //[GET] /login/infoLogin
