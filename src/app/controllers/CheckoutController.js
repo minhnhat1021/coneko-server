@@ -117,7 +117,7 @@ async function handleCheckout(details, res, next, paymentMethod) {
         
         const bookingDetails = await Booking.create({...newBooking, user, room})
         
-        const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
+        const qrData = `http://coneko.online/admin/booking-management/details/${bookingDetails._id}`
 
         const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
 
@@ -194,8 +194,8 @@ class RoomsController {
                 "description": `Thanh toán bằng payPal`
             }],
             "redirect_urls": {
-                "return_url": `http://localhost:3000/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
-                "cancel_url": "http://localhost:3000/payment-cancel"    // URL khi thanh toán bị hủy
+                "return_url": `/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
+                "cancel_url": "/payment-cancel"    // URL khi thanh toán bị hủy
             }
         }
     
@@ -301,7 +301,7 @@ class RoomsController {
             vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId
             vnp_Params['vnp_OrderType'] = 'other'
             vnp_Params['vnp_Amount'] = totalPrice * 100
-            vnp_Params['vnp_ReturnUrl'] = `http://localhost:3000/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
+            vnp_Params['vnp_ReturnUrl'] = `/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
             vnp_Params['vnp_IpAddr'] = '127.0.0.1'
             vnp_Params['vnp_CreateDate'] = moment(new Date()).format('YYYYMMDDHHmmss')
             vnp_Params['vnp_BankCode'] = 'NCB'
@@ -399,7 +399,7 @@ class RoomsController {
         }
 
         const embed_data = {
-            redirecturl: `http://localhost:3000/payment-verification?zalopayDetails=${paymentDetails}`,
+            redirecturl: `/payment-verification?zalopayDetails=${paymentDetails}`,
         }
         const items = [{}]
         const transID = Math.floor(Math.random() * 1000000);
