@@ -20,10 +20,7 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + '-' + uuidv4() + path.extname(file.originalname))
     }
 })
-const uploadMiddleware = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } 
-}).single('file')
+const uploadMiddleware = multer({ storage: storage }).single('file')
 
 
 module.exports = uploadMiddleware
