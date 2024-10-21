@@ -22,7 +22,7 @@ paypal.configure({
     'client_id': 'AR2QfHBja3liPa_Zb9sJkXudCPKwol1aDbsjYUv9z8XbBI-qypxcnGlxaJSTkyhG8guSTvY7y3t_6Zgb',
     'client_secret': 'ECjuH6I43Pg-RjEKcIPj0kbLMr6qsE1joJQvrGsWdNmPrk56g4NiVs1BNK-E9Q8stVaBHlqdEqEmuAwa'
 })
-
+console.log(new Date())
 cron.schedule('25 15 * * *', async () => {
     const users = await User.find()
 
