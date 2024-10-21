@@ -19,8 +19,6 @@ class RoomsController {
             .catch(err => next(err))
     }
 
-    
-
 }
 
 module.exports = new RoomsController
