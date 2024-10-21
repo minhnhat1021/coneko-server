@@ -22,12 +22,10 @@ paypal.configure({
     'client_id': 'AR2QfHBja3liPa_Zb9sJkXudCPKwol1aDbsjYUv9z8XbBI-qypxcnGlxaJSTkyhG8guSTvY7y3t_6Zgb',
     'client_secret': 'ECjuH6I43Pg-RjEKcIPj0kbLMr6qsE1joJQvrGsWdNmPrk56g4NiVs1BNK-E9Q8stVaBHlqdEqEmuAwa'
 })
-console.log('thời gian:', new Date())
-cron.schedule('42 10 * * *', async () => {
+cron.schedule('1 3 * * *', async () => {
     const users = await User.find()
 
     const currentTime = new Date()
-    console.log('thời gian lọc:', currentTime)
     
     for (const user of users) {
         // Lọc currentRooms từ bookedRooms
@@ -44,7 +42,6 @@ cron.schedule('42 10 * * *', async () => {
     for (const room of rooms) {
         // Lọc currentUsers từ bookedUsers
         const currentUsers = room.bookedUsers.filter(booking => {
-            console.log('thời gian trong room:', booking.checkOutDate, currentTime)
             return booking.checkOutDate >= currentTime
         })
         room.currentUsers = currentUsers
