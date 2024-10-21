@@ -23,7 +23,7 @@ paypal.configure({
     'client_secret': 'ECjuH6I43Pg-RjEKcIPj0kbLMr6qsE1joJQvrGsWdNmPrk56g4NiVs1BNK-E9Q8stVaBHlqdEqEmuAwa'
 })
 
-cron.schedule('21 15 * * *', async () => {
+cron.schedule('25 15 * * *', async () => {
     const users = await User.find()
 
     const currentTime = new Date()
