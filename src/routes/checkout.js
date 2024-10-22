@@ -7,6 +7,8 @@ const checkoutController = require('../app/controllers/CheckoutController')
 
 
 // Checkout controller
+router.get('/bookings', checkoutController.bookings)
+router.get('/vnpay', checkoutController.vnPay)
 
 
 

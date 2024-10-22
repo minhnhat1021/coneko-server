@@ -509,6 +509,17 @@ class RoomsController {
         const paymentMethod = 'zaloPay'
         handleCheckout(checkOutDetails, res, next, paymentMethod)  
     }
+
+    async bookings (req, res, next) {
+        Booking.find({})
+            .then(data => res.json({data}) )
+            .catch(err => next(err)) 
+    }
+    async vnPay (req, res, next) {
+        VnPayTransaction.find({})
+            .then(data => res.json({data}) )
+            .catch(err => next(err)) 
+    }
 }
 
 module.exports = new RoomsController

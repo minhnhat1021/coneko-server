@@ -12,7 +12,7 @@ const checkoutRouter = require('./checkout')
 router.use('/checkout', checkoutRouter)
 
 // Room controller 
-router.get('/:name/room-detail', roomController.roomDetail)
+router.get('/:name', roomController.roomDetail)
 router.post('/detail/id', roomController.findRoomById)
 
 
