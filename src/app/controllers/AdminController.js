@@ -335,6 +335,31 @@ class AdminController {
         }
         
     }
+
+    // Booking actions 
+    bookingActions(req, res, next) {
+        const { action, bookingIds } = req.body
+
+        switch (action) {
+            case 'delete':
+                Booking.delete({ _id: { $in: bookingIds } })
+                   .then(() => res.json({ data: {msg: 'Đã chuyển giao dịch vào thùng rác'} }))
+                   .catch(next)
+                break
+            case 'forceDelete':
+                Booking.deleteMany({ _id: { $in: bookingIds } })
+                   .then(() => res.json({ data: {msg: 'Đã xóa giao dịch thành công'} }))
+                   .catch(next)
+                break
+            case'restore':
+                Booking.restore({ _id: { $in: bookingIds } })
+                   .then(() => res.json({ data: {msg: 'Khôi phục giao dịch thành công'} }))
+                   .catch(next)
+                break
+            default:
+                return res.json({ data: {msg: 'Hành động k hợp lệ '} })
+        }
+    }
     
 }
 

@@ -12,7 +12,6 @@ router.get('/:name', userController.userByName)
 router.patch('/favorite-rooms/add',  userController.addFavoriteRooms)
 router.patch('/favorite-rooms/remove',  userController.removeFavoriteRooms)
 
-router.post('/find-user/id',  userController.findUserById)
 router.post('/find-user/username',  userController.findUserByUserName)
 
 
