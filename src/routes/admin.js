@@ -44,6 +44,7 @@ router.post('/room-actions',  adminController.roomActions)
 
 // Booking management
 router.get('/booking-management',  adminController.bookingManagement)
+router.get('/booking-trash',  adminController.bookingTrash)
 router.post('/booking/filter-options',  adminController.filterBookingByOptions)
 router.post('/booking-actions',  adminController.bookingActions)
 

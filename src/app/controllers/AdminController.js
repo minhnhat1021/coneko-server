@@ -297,6 +297,11 @@ class AdminController {
 
         res.json({ data: {msg: 'Toàn bộ dữ liệu về những lần đặt phòng của khách hàng', bookings } })
     }
+    // [GET] admin/booking-trash
+    async bookingTrash(req, res, next) {
+        const bookings  = await Booking.findWithDeleted({deleted: true})
+        res.json({ data: {msg: 'Những giao dịch đã bị xóa', bookings } })
+    }
 
     // [Post] /booking/filter-options
     
