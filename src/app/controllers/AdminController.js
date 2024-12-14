@@ -99,7 +99,11 @@ class AdminController {
             res.status(500).json({data: {msg: 'lỗi truy xuất dữ liệu Room'} })
         }
     }
-
+    findUserById(req, res, next) {
+        User.findOne({_id: req.params.userId})
+           .then(user => res.json({ data: user }))
+           .catch(next)
+    }
     // [Get] /admin/id/user-ban
     userBan(req, res, next) {
         User.delete({ _id: req.body.userId})
@@ -157,7 +161,11 @@ class AdminController {
             res.status(500).json({ data: {msg: 'lỗi truy xuất dữ liệu Room'} })
         }
     }
-
+    findRoomById(req, res, next) {
+        Room.findOne({_id: req.params.roomId})
+           .then(room => res.json({ data: room }))
+           .catch(next)
+    }
     // [Get] /admin/statisticsRoom  StatisticsRoom-------------------------------------------------
     async statisticsRoom(req, res, next) {
         try {
@@ -291,18 +299,23 @@ class AdminController {
     }
     // Booking management ----------------------------------------------
 
-    // [GET] admin/booking-management
-    async bookingManagement(req, res, next) {
-        const bookings  = await Booking.find({})
-
-        res.json({ data: {msg: 'Toàn bộ dữ liệu về những lần đặt phòng của khách hàng', bookings } })
+    // [GET] admin/booked-deposit
+    async bookedList(req, res, next) {
+        const {status} = req.body
+        if(!status) {
+            const bookings = await Booking.find({})
+            return res.json({ data: {msg: 'Danh sách booking ', bookings } })
+        }
+        const bookings  = await Booking.find({status: status})
+        res.json({ data: {msg: 'Danh sách booking ', bookings } })
     }
     // [GET] admin/booking-trash
     async bookingTrash(req, res, next) {
         const bookings  = await Booking.findWithDeleted({deleted: true})
         res.json({ data: {msg: 'Những giao dịch đã bị xóa', bookings } })
     }
-
+    
+    //aaa
     // [Post] /booking/filter-options
     
     async filterBookingByOptions(req, res, next) {
@@ -347,7 +360,7 @@ class AdminController {
 
         switch (action) {
             case 'delete':
-                Booking.delete({ _id: { $in: bookingIds } })
+                Booking.deleteOne({ _id: { $in: bookingIds } })
                    .then(() => res.json({ data: {msg: 'Đã chuyển giao dịch vào thùng rác'} }))
                    .catch(next)
                 break
@@ -365,6 +378,32 @@ class AdminController {
                 return res.json({ data: {msg: 'Hành động k hợp lệ '} })
         }
     }
+
+    // Booking payment 
+    async paymentBooking(req, res, next) {
+        const { bookingId, paymentMethod } = req.body
+        if(paymentMethod === 'cash') {
+            const booking = await Booking.findOne({bookingId: bookingId})
+            await booking.updateOne({status: 'Đã thanh toán'})
+
+            res.status(200).json({ data: {status: 200, msg: 'Thanh toán bằng tiền mặt thành công', booking} })
+
+        } else if(paymentMethod === 'account') {
+            const booking = await Booking.findOne({bookingId: bookingId})
+            const { userId, outstandingBalance } = booking
+            const user = await User.findOne({_id: userId})
+            let newAccountBalance
+            newAccountBalance = user.accountBalance - outstandingBalance
+            if(newAccountBalance < 0) {
+                return res.json({ data: {status: 400, insufficientBalance: true, msg: 'Số sư tài khoản không đủ để thanh toán' } })
+            }
+            user.accountBalance = newAccountBalance
+            await user.save()
+            await booking.updateOne({status: 'Đã thanh toán'})
+            res.json({ data: {status: 200, msg: 'Thanh toán bằng tài khoản coneko thành công' } })
+        }
+    }
+    
     
 }
 

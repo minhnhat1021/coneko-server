@@ -8,7 +8,7 @@ const mongooseDelete = require('mongoose-delete')
 const VnPayTransactionSchema = new Schema({
   orderId: {type: String,required: true,unique: true,index: true,  },
 
-  roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+  roomId: { type: Array },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
   checkInDate: {type: Date}, 
@@ -16,15 +16,13 @@ const VnPayTransactionSchema = new Schema({
   days: {type: Number},
   bookingDate: { type: Date },
 
-  roomPrice: {type: Number}, 
   roomCharge: {type: Number}, 
-  amenitiesPrice: {type: Number}, 
-  amenitiesCharge: {type: Number}, 
-  amenities: {type: Object}, 
-  originalPrice: { type: Number }, 
+
   discountRate: { type: Number }, 
   discountAmount: { type: Number },
+  totalPrice: { type: Number },
   amountSpent: { type: Number },
+  outstandingBalance: { type: Number },
   
 },{
     timestamps: true // tạo dữ liệu về thời gian tạo và xóa User

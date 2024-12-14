@@ -49,10 +49,10 @@ class RoomsController {
             // Loại giường
             const bedTypes = []
             if (options.includes('singleBed')) {
-                bedTypes.push('single')
+                bedTypes.push('Giường đơn')
             }
             if (options.includes('doubleBed')) {
-                bedTypes.push('double')
+                bedTypes.push('Giường đôi')
             }
             if (bedTypes.length > 0) {
                 filterCriteria.bedType = { $in: bedTypes }
@@ -63,9 +63,6 @@ class RoomsController {
             }
             if (options.includes('twoBed')) {
                 bedCounts.push('2')
-            }
-            if (options.includes('threeBed')) {
-                bedCounts.push('3')
             }
             if (bedCounts.length > 0) {
                 filterCriteria.bedCount = { $in: bedCounts }
@@ -95,6 +92,7 @@ class RoomsController {
                 filterCriteria.smoking = false
             }
 
+            console.log(filterCriteria)
             const rooms = await Room.find(filterCriteria)
             res.status(200).json({ data: {msg: 'Danh sách phòng sau khi lọc', rooms} })
 

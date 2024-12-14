@@ -67,17 +67,18 @@ const handleLevel = (totalSpent) => {
 }
 async function handleCheckout(details, res, next, paymentMethod) {
     try{
+        const bookingId = `${uuidv4()}-${Date.now()}`
         const { 
-            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-            originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId 
+            startDate, endDate, days, roomCharge, 
+             discountRate, discountAmount,deposit, outstandingBalance, totalPrice, roomId, userId 
         } = details
-        console.log('chi tiết thanh toán:', details)
 
         // Kiểm tra user
         const user = await User.findById(userId)
         if (!user) {
             return res.json({ data: {msg: 'User đang thanh toán không khả dụng'} })
         }
+
         let newAccountBalance
         if(paymentMethod === 'coneko'){
             newAccountBalance = user.accountBalance - totalPrice
@@ -87,32 +88,45 @@ async function handleCheckout(details, res, next, paymentMethod) {
             user.accountBalance = newAccountBalance
         }
 
-        user.totalSpent += totalPrice
+        user.totalSpent += deposit
         user.level = await handleLevel(user.totalSpent)
         
         const bookingDate = Date.now()
        
         const newBooking = {
+            bookingId,
             userId,
             roomId, 
             checkInDate: startDate, 
             checkOutDate: endDate, 
             days,
-            roomPrice, 
+            bookingDate,
             roomCharge, 
-            amenitiesPrice, 
-            amenitiesCharge, 
-            amenities, 
-            originalPrice, 
             discountRate, 
             discountAmount,
-            amountSpent: totalPrice,
-            bookingDate
+            totalPrice,
+            amountSpent: deposit,
+            outstandingBalance,
         }
+        let rooms = []
+        roomId?.forEach(async(id) => {
+            const booking = {
+                bookingId,
+                userId,
+                roomId, 
+                checkInDate: startDate, 
+                checkOutDate: endDate, 
+                days,
+                bookingDate,
+            }
+            const room = await Room.findById(id)
+            room.bookedUsers.push(booking)
+            rooms.push(room)
+            await room.save()
+        })
         
-        const room = await Room.findById(roomId)
         
-        const bookingDetails = await Booking.create({...newBooking, user, room})
+        const bookingDetails = await Booking.create({...newBooking})
         
         const qrData = `http://coneko.online/admin/booking-management/details/${bookingDetails._id}`
 
@@ -121,24 +135,17 @@ async function handleCheckout(details, res, next, paymentMethod) {
         newBooking.qrCode = qrCode
         
         user.bookedRooms.push(newBooking)
-        user.currentRooms.push(newBooking)
-
-        room.bookedUsers.push(newBooking)
-        room.currentUsers.push(newBooking)
-
-
-        bookingDetails.qrCode = qrCode
-
         await user.save()
 
-        await room.save()
-
+        bookingDetails.qrCode = qrCode
+        bookingDetails.user = user
+        bookingDetails.rooms = rooms
+        bookingDetails.status = 'Đã đặt cọc'
         await bookingDetails.save()
 
 
         if(paymentMethod === 'coneko'){
-
-            res.json({ data: { msg: 'Thanh toán thành công', newAccountBalance, room, qrCode } })
+            res.json({ data: {status: true, msg: 'Thanh toán thành công', newAccountBalance, qrCode } })
 
         } else if(paymentMethod === 'payPal'){
             res.json({ data: { message: 'Lưu dữ liệu thanh toán phòng thành công', return_code: 1, qrCode} })
@@ -169,14 +176,13 @@ class RoomsController {
     // Paypal check out -------------------------------------------------------------------
     payPalCheckout(req, res, next) {
         let { 
-            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-            amenitiesCharge, amenities,  totalPrice, roomId, userId 
+            deposit,
         } = req.body
 
         const paymentDetails = encodeURIComponent(JSON.stringify(req.body))
         // Cấu hình yêu cầu thanh toán
-        const exchangeRate = 24605
-        const amountInUSD = (totalPrice / exchangeRate).toFixed(2)
+        const exchangeRate = 25365
+        const amountInUSD = (deposit / exchangeRate).toFixed(2)
         
         const create_payment_json = {
             "intent": "sale",
@@ -191,7 +197,7 @@ class RoomsController {
                 "description": `Thanh toán bằng payPal`
             }],
             "redirect_urls": {
-                "return_url": `http://coneko.online/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
+                "return_url": `http://localhost:3000/payment-verification?payPalDetails=${paymentDetails}`,  // URL khi thanh toán thành công
                 "cancel_url": "/payment-cancel"    // URL khi thanh toán bị hủy
             }
         }
@@ -259,8 +265,7 @@ class RoomsController {
         try{
         
             let { 
-                startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, 
-                amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, totalPrice, roomId, userId 
+                startDate, endDate, days, roomCharge, discountRate, discountAmount, totalPrice, deposit, outstandingBalance, roomId, userId 
             } = req.body
             function sortObject(obj) {
                 let sorted = {}
@@ -282,9 +287,8 @@ class RoomsController {
             let vnpUrl = process.env.VNPAY_ENDPOINT
 
             const bookingDate = Date.now()
-
             const vnPayPayment = new VnPayTransaction({orderId, userId, roomId, checkInDate: startDate, checkOutDate: endDate, days,
-                roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, originalPrice, discountRate, discountAmount, amountSpent: totalPrice, bookingDate})
+                roomCharge, discountRate, discountAmount,totalPrice, amountSpent: deposit , outstandingBalance, bookingDate})
                                 
             await vnPayPayment.save()
             const vnPayCheckoutId = vnPayPayment._id
@@ -297,12 +301,11 @@ class RoomsController {
             vnp_Params['vnp_TxnRef'] = orderId
             vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId
             vnp_Params['vnp_OrderType'] = 'other'
-            vnp_Params['vnp_Amount'] = totalPrice * 100
-            vnp_Params['vnp_ReturnUrl'] = `http://coneko.online/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
+            vnp_Params['vnp_Amount'] = deposit * 100
+            vnp_Params['vnp_ReturnUrl'] = `http://localhost:3000/payment-verification?vnPayCheckoutId=${vnPayCheckoutId}`
             vnp_Params['vnp_IpAddr'] = '127.0.0.1'
             vnp_Params['vnp_CreateDate'] = moment(new Date()).format('YYYYMMDDHHmmss')
             vnp_Params['vnp_BankCode'] = 'NCB'
-
 
             vnp_Params = sortObject(vnp_Params)
 
@@ -363,12 +366,12 @@ class RoomsController {
         const { vnPayCheckoutId } = req.body
         const vnPayDetails = await VnPayTransaction.findById(vnPayCheckoutId)
 
-        const { checkInDate, checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-            originalPrice, discountRate, discountAmount,  amountSpent, roomId, userId 
+        const { checkInDate, checkOutDate, days, roomCharge,  
+            discountRate, discountAmount, totalPrice, amountSpent, outstandingBalance, roomId, userId 
         } = vnPayDetails
 
-        const checkOutDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-            originalPrice, discountRate, discountAmount,  totalPrice: amountSpent, roomId, userId}
+        const checkOutDetails = {startDate: checkInDate, endDate: checkOutDate, days, roomCharge, 
+            discountRate, discountAmount,  totalPrice, deposit: amountSpent, outstandingBalance, roomId, userId}
 
         const paymentMethod = 'vnPay'
 
@@ -382,8 +385,7 @@ class RoomsController {
     // vnPay check out -------------------------------------------------------------------
     async zaloPayCheckout(req, res, next) {
         let { 
-            startDate, endDate, days, roomPrice, roomCharge, amenitiesPrice, amenitiesCharge, amenities, 
-            originalPrice, discountRate, discountAmount,  totalPrice, roomId, userId 
+            deposit
         } = req.body
 
         const paymentDetails = encodeURIComponent(JSON.stringify(req.body))
@@ -396,7 +398,7 @@ class RoomsController {
         }
 
         const embed_data = {
-            redirecturl: `http://coneko.online/payment-verification?zalopayDetails=${paymentDetails}`,
+            redirecturl: `http://localhost:3000/payment-verification?zalopayDetails=${paymentDetails}`,
         }
         const items = [{}]
         const transID = Math.floor(Math.random() * 1000000);
@@ -407,10 +409,10 @@ class RoomsController {
             app_time: Date.now(), 
             item: JSON.stringify(items),
             embed_data: JSON.stringify(embed_data),
-            amount: totalPrice,
+            amount: deposit,
             description: `Thanh toán đặt phòng #${transID}`,
             bank_code: "",
-            callback_url: 'http://coneko.online/api/room/checkout/zalopay/confirm'
+            callback_url: 'http://localhost:3000/api/room/checkout/zalopay/confirm'
             
         }
 
@@ -443,8 +445,6 @@ class RoomsController {
             let reqMac = req.body.mac
 
             let mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString()
-            console.log("mac =", mac)
-
 
             // kiểm tra callback hợp lệ (đến từ ZaloPay server)
             if (reqMac !== mac) {
@@ -456,7 +456,6 @@ class RoomsController {
                 // thanh toán thành công
                 // merchant cập nhật trạng thái cho đơn hàng
                 let dataJson = JSON.parse(dataStr, config.key2);
-                console.log("update order's status = success where app_trans_id =", dataJson["app_trans_id"])
 
                 result.return_code = 1
                 result.return_message = "success"

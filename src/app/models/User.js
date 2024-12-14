@@ -15,48 +15,25 @@ const User = new Schema({
     password: {type: String, default: ''},
     displayName: {type: String, default: ''},
     avatar: {type: String, default: ''},
+    phone: {type: String, default: ''},
     accountBalance: {type: Number, default: 100000000},
     totalSpent: {type: Number, default: 0},
     favoriteRooms: [],
     bookedRooms: [
         {
-            roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+            bookingId: {type: String},
+            roomId: {type: Array},
             checkInDate: {type: Date}, 
             checkOutDate: {type: Date}, 
             days: {type: Number},
             bookingDate: { type: Date },
 
-            roomPrice: {type: Number}, 
             roomCharge: {type: Number}, 
-            amenitiesPrice: {type: Number}, 
-            amenitiesCharge: {type: Number}, 
-            amenities: {type: Object}, 
-            originalPrice: { type: Number }, 
             discountRate: { type: Number }, 
             discountAmount: { type: Number },
+            totalPrice: { type: Number },
             amountSpent: { type: Number },
-
-            qrCode: { type: String },
-            _id: false
-        }
-    ],
-    currentRooms: [
-        {
-            roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
-            checkInDate: {type: Date}, 
-            checkOutDate: {type: Date}, 
-            days: {type: Number},
-            bookingDate: { type: Date },
-
-            roomPrice: {type: Number}, 
-            roomCharge: {type: Number}, 
-            amenitiesPrice: {type: Number}, 
-            amenitiesCharge: {type: Number}, 
-            amenities: {type: Object}, 
-            originalPrice: { type: Number }, 
-            discountRate: { type: Number }, 
-            discountAmount: { type: Number },
-            amountSpent: { type: Number },
+            outstandingBalance: { type: Number },
 
             qrCode: { type: String },
             _id: false

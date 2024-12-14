@@ -6,67 +6,40 @@ const mongooseDelete = require('mongoose-delete')
 const Room = new Schema({
     name: { type: String, default: '' },
     desc: { type: String, default: '' }, 
-    overView: { type: String, default: '' }, 
-    price: { type: Number, required: true }, 
-
-
-    bedType: { type: String, enum: ['single', 'double', 'queen', 'king', 'twin', 'bunk'], default: 'single' },
+    originPrice: { type: Number }, 
+    discountPercentage: { type: Number},
+    price: { type: Number}, 
+    capacity: { type: String, default: '4' },
+    size: { type: String, default: '50' },
+    bedType: { type: String, enum: ['Giường đơn', 'Giường đôi'], default: 'Giường đôi' },
     bedCount: {type: String, default: '2'},
-    floor: { type: String, default: '5' }, 
     rating: { type: String, min: 1, max: 5, default: '5' }, 
-    amenities: { type: [String], enum:['netflix'], default: ['netflix'] }, 
+    amenities: { type: [String], default: ['Coffee', 'Minabar', 'Bữa sáng'] }, 
 
 
     images: { type: Object, default: { image1: '', image2: '', image3: '' } },
     smoking: { type: Boolean, default: false }, 
-    status: { type: String, enum: ['available', 'booked', 'inUse'], default: 'available' },
-    roomSize: { type: Number, default: 40 }, 
-    view: { type: String, default: '' } ,
+    status: { type: String, enum: ['Còn trống', 'Đã đặt', 'Đang sử dụng'], default: 'Còn trống' },
 
     bookedUsers: [
         {
+            bookingId: {type: String},
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
             checkInDate: {type: Date}, 
             checkOutDate: {type: Date}, 
             days: {type: Number},
             bookingDate: { type: Date },
 
-            roomPrice: {type: Number}, 
             roomCharge: {type: Number}, 
-            amenitiesPrice: {type: Number}, 
-            amenitiesCharge: {type: Number}, 
-            amenities: {type: Object}, 
-            originalPrice: { type: Number }, 
             discountRate: { type: Number }, 
             discountAmount: { type: Number },
+            totalPrice: { type: Number },
             amountSpent: { type: Number },
+            outstandingBalance: { type: Number },
 
-            qrCode: { type: String },
             _id: false
         }
-    ],
-    currentUsers: [
-        {
-            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-            checkInDate: {type: Date}, 
-            checkOutDate: {type: Date}, 
-            days: {type: Number},
-            bookingDate: { type: Date },
-
-            roomPrice: {type: Number}, 
-            roomCharge: {type: Number}, 
-            amenitiesPrice: {type: Number}, 
-            amenitiesCharge: {type: Number}, 
-            amenities: {type: Object}, 
-            originalPrice: { type: Number }, 
-            discountRate: { type: Number }, 
-            discountAmount: { type: Number },
-            amountSpent: { type: Number },
-
-            qrCode: { type: String },
-            _id: false
-        }
-    ],
+    ]
 
 }, {
     timestamps: true // Tự động thêm createdAt và updatedAt

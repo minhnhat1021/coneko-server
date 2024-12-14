@@ -10,6 +10,7 @@ const adminController = require('../app/controllers/AdminController')
 
 
 router.get('/user',  adminController.User)
+router.get('/user/find-by-id/:userId',  adminController.findUserById)
 
 router.post('/login',  adminController.adminLogin)
 router.post('/register',  adminController.adminRegister)
@@ -30,6 +31,8 @@ router.post('/user-actions',  adminController.userActions)
 router.get('/room',  adminController.Room)
 router.get('/statistics-room',  adminController.statisticsRoom)
 router.get('/trash-rooms',  adminController.trashRooms)
+router.get('/room/find-by-id/:roomId',  adminController.findRoomById)
+
 
 router.post('/upload', uploadMiddleware,  adminController.uploadRoom)
 router.post('/create-room',  adminController.createRoom)
@@ -43,9 +46,12 @@ router.post('/room-actions',  adminController.roomActions)
 
 
 // Booking management
-router.get('/booking-management',  adminController.bookingManagement)
+router.post('/booked-list',  adminController.bookedList)
 router.get('/booking-trash',  adminController.bookingTrash)
 router.post('/booking/filter-options',  adminController.filterBookingByOptions)
 router.post('/booking-actions',  adminController.bookingActions)
+
+router.post('/booking/payment',  adminController.paymentBooking)
+
 
 module.exports = router 
