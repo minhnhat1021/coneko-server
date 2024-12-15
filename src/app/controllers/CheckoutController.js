@@ -128,7 +128,7 @@ async function handleCheckout(details, res, next, paymentMethod) {
         
         const bookingDetails = await Booking.create({...newBooking})
         
-        const qrData = `http://coneko.online/admin/booking-management/details/${bookingDetails._id}`
+        const qrData = `http://localhost:3000/admin/booking-management/details/${bookingDetails._id}`
 
         const qrCode = await QRCode.toDataURL(JSON.stringify(qrData))
 
