@@ -1,6 +1,8 @@
 const User = require('../models/User')
 const Room = require('../models/Room')
 const GuestInquiry = require('../models/GuestInquiry')
+
+const bcrypt = require('bcrypt')
 class UserController {
 
     //[GET]  api test username
@@ -19,7 +21,46 @@ class UserController {
         await GuestInquiry.create({fullName, email, phone, address, numberOfPeople,preferences})
         res.json( {data: {status: 200, msg: 'Chúng tôi đã nhận được phản hồi từ bạn, đội ngũ tư vấn sẽ sớm liên hệ lại'}} )
     }
-
+    
+    async userUpdateInfo (req, res, next) {
+        const id = req.body.id
+        const { fullName,userName, email, phone } = req.body?.payload
+        await User.updateOne(
+            { _id: id }, 
+            { fullName, userName, email, phone } 
+        )
+        
+        res.json( {data: {status: 200, msg: 'Đổi thông tin thành công'}} )
+    }
+    
+    async userUpdatePassword (req, res, next) {
+        const id = req.body.id
+        const { password, newPassword} = req.body?.payload
+        User.findOne({_id: id}) 
+            .then((user) => {
+                if(user) {
+                    bcrypt.compare(password, user.password, (err, isMatch) => {
+                        if (isMatch) {
+                            bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+                                if (err) {
+                                    throw new Error('lỗi mã hóa mật khẩu');
+                                }
+                                User.updateOne({ _id: id }, { password : hashedPassword})
+                                .then(() => {
+                                    return res.status(200).json({ data: {status: 200, msg: 'Đổi mật khẩu thành công'} })
+                                })
+                            })
+                            
+                        } else {
+                            return res.json({ data: {status: 400, msg: 'Mật khẩu cũ không chính xác'} })
+                        }
+                    })   
+                }else {
+                    res.json({ data: {status: 400, msg: 'Tài khoản này chưa được đăng ký'} })
+                }
+            })  
+        // res.json( {data: {status: 200, msg: 'Đổi thông tin thành công'}} )
+    }
     // [Patch] /favorite-rooms/add
     async addFavoriteRooms(req, res, next) {
         try {

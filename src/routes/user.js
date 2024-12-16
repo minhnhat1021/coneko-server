@@ -8,6 +8,8 @@ const userController = require('../app/controllers/UserController')
 // user controller
 router.post('/userDetails', loginMiddleware,  userController.userDetail)
 router.get('/:name', userController.userByName)
+router.patch('/update-info',  userController.userUpdateInfo)
+router.patch('/update-password',  userController.userUpdatePassword)
 
 router.patch('/favorite-rooms/add',  userController.addFavoriteRooms)
 router.patch('/favorite-rooms/remove',  userController.removeFavoriteRooms)
