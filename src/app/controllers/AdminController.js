@@ -309,6 +309,32 @@ class AdminController {
         const bookings  = await Booking.find({status: status})
         res.json({ data: {msg: 'Danh sách booking ', bookings } })
     }
+    async bookedCancel(req, res, next) {
+        const {id} = req.body
+        const booking = await Booking.findOne({bookingId: id})
+        if(booking){
+            booking.status = 'Hủy đặt'
+            await booking.save()
+            const user = await User.findById(booking.userId)
+            const bookedRooms = user?.bookedRooms?.filter(booked => booked?.bookingId !== id)
+            user.bookedRooms = bookedRooms
+            await user.save()
+        }
+        const roomId = booking?.roomId
+        if (roomId && roomId.length > 0) {
+            await Promise.all(
+                roomId.map(async (roomId) => {
+                    const room = await Room.findById(roomId)
+                    if (room) {
+                        room.bookedUsers = room.bookedUsers?.filter((booked) => booked.bookingId !== id)
+                        await room.save()
+                    }
+                })
+            )
+        }
+
+        res.json({ data: {status:200 , msg: 'Hủy phòng thành công ' } })
+    }
     // [GET] admin/booking-trash
     async bookingTrash(req, res, next) {
         const bookings  = await Booking.findWithDeleted({deleted: true})
@@ -384,7 +410,9 @@ class AdminController {
         const { bookingId, paymentMethod } = req.body
         if(paymentMethod === 'cash') {
             const booking = await Booking.findOne({bookingId: bookingId})
-            await booking.updateOne({status: 'Đã thanh toán'})
+            booking.status = 'Đã thanh toán'
+            booking.outstandingBalance = 0;
+            await booking.save()
 
             res.status(200).json({ data: {status: 200, msg: 'Thanh toán bằng tiền mặt thành công', booking} })
 
@@ -399,7 +427,9 @@ class AdminController {
             }
             user.accountBalance = newAccountBalance
             await user.save()
-            await booking.updateOne({status: 'Đã thanh toán'})
+            booking.status = 'Đã thanh toán'
+            booking.outstandingBalance = 0
+            await booking.save()
             res.json({ data: {status: 200, msg: 'Thanh toán bằng tài khoản coneko thành công' } })
         }
     }

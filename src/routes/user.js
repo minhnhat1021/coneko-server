@@ -13,6 +13,7 @@ router.patch('/favorite-rooms/add',  userController.addFavoriteRooms)
 router.patch('/favorite-rooms/remove',  userController.removeFavoriteRooms)
 
 router.post('/find-user/username',  userController.findUserByUserName)
+router.post('/guest-inquiry',  userController.guestInquiry)
 
 
 

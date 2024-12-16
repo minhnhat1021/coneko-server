@@ -1,6 +1,6 @@
 const User = require('../models/User')
 const Room = require('../models/Room')
-
+const GuestInquiry = require('../models/GuestInquiry')
 class UserController {
 
     //[GET]  api test username
@@ -12,6 +12,12 @@ class UserController {
     //[Post] /userDetails
     userDetail(req, res, next) {
         res.json( req.user )
+    }
+    //[Post] /userDetails
+    async guestInquiry(req, res, next) {
+        const { fullName, email, phone, address, numberOfPeople,preferences } = req.body?.payload
+        await GuestInquiry.create({fullName, email, phone, address, numberOfPeople,preferences})
+        res.json( {data: {status: 200, msg: 'Chúng tôi đã nhận được phản hồi từ bạn, đội ngũ tư vấn sẽ sớm liên hệ lại'}} )
     }
 
     // [Patch] /favorite-rooms/add
