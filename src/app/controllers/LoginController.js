@@ -16,7 +16,7 @@ class LoginController {
     // [POST] /login
     login(req, res, next) {
         const {userName, password} = req.body
-        User.findOne({userName: userName}) 
+        User.findOne({ $or: [{ userName: userName }, { email: userName }] }) 
             .then((user) => {
                 if(user) {
                     bcrypt.compare(password, user.password, (err, isMatch) => {
@@ -47,6 +47,42 @@ class LoginController {
             verifyToken: ''
         })
             .then(() => res.json({data: {msg: 'Đã hết phiên đăng nhập'} }))
+    }
+    async resetPassword(req, res, next) {
+        const {userName, identifier} = req.body.payload
+        const user = await User.findOne({userName: userName})
+        if(!user){
+            return res.json({ data: {status: 400, msg: 'Tài khoản này chưa được đăng ký'} })
+        } else{
+            if(user?.phone === identifier || user?.email === identifier) {
+                function generateRandomPassword(length = 8) {
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+                    let password = ''
+                    for (let i = 0; i < length; i++) {
+                        const randomIndex = Math.floor(Math.random() * chars.length)
+                        password += chars[randomIndex]
+                    }
+                    return password
+                }
+                const newPassword = await generateRandomPassword()
+                
+                try {
+                    const hashedPassword = await bcrypt.hash(newPassword, 10)
+                    user.password = hashedPassword
+                    await user.save()
+            
+                    return res.json({ data: { status: 200, msg: 'Cấp mật khẩu thành công', newPassword} })
+                } catch (err) {
+                    console.error('Lỗi mã hóa mật khẩu', err);
+                    return res.status(400).json({
+                        data: { status: 400, msg: 'Có lỗi xảy ra, vui lòng thử lại' },
+                    });
+                }
+               
+            } else {
+                return res.json({ data: {status: 400, msg: 'Số điện thoại hoặc email không chính xác'} })
+            }
+        }
     }
     async googleLogin(req, res, next) {
         const { credential } = req.body

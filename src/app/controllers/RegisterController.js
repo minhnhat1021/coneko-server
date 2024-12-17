@@ -21,7 +21,7 @@ class RegisterController {
                 }else {
                     const {fullName, email, password} = req.body
                     const displayName = fullName
-                    const userName = email
+                    const userName = email.split('@')[0]
                     const isActive = true
                     
                     // Tạo token mã hóa JWT
